@@ -30,7 +30,7 @@ function sparkline(values, kind) {
 
 function renderTable() {
   const filtered=DATA[task].filter(m=>typeFilter.value==='all'||m.kind===typeFilter.value);
-  body.innerHTML=filtered.map((m,i)=>`<tr>
+  body.innerHTML=filtered.map((m,i)=>`<tr data-model="${m.name}" tabindex="0" aria-label="查看 ${m.name} 的各测试集指标">
     <td><span class="rank ${i<3?'top':''}">${String(i+1).padStart(2,'0')}</span></td>
     <td><div class="model"><span class="model-logo">${m.logo}</span><span><b>${m.name}</b><small><i class="type-dot ${m.kind}"></i>${m.org}</small></span></div></td>
     <td><span class="score ${i===0?'best':''}">${m.score.toFixed(2)}${task==='asr'?'%':' / 5'}</span></td>
@@ -38,6 +38,10 @@ function renderTable() {
     <td><input class="compare-check" type="checkbox" aria-label="将 ${m.name} 加入对比" data-name="${m.name}" ${selected.has(m.name)?'checked':''}></td>
   </tr>`).join('');
   body.querySelectorAll('.compare-check').forEach(el=>el.addEventListener('change',onCompare));
+  body.querySelectorAll('tr[data-model]').forEach(row=>{
+    row.addEventListener('click',e=>{if(!e.target.classList.contains('compare-check'))openModel(row.dataset.model)});
+    row.addEventListener('keydown',e=>{if(e.key==='Enter')openModel(row.dataset.model)});
+  });
 }
 
 function setTask(next) {
@@ -70,6 +74,57 @@ function drawRadar(model){
 
 function showToast(message){const t=document.querySelector('#toast');t.textContent=message;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove('show'),2200)}
 
+const ASR_DATASETS=[
+  ['AISHELL-1','中文 · 普通话','178h','cer',0],
+  ['AISHELL-2 iOS','中文 · 远场','1000h','cer',1.14],
+  ['WenetSpeech Test_Net','中文 · 多场景','23h','cer',2.38],
+  ['LibriSpeech test-clean','英文 · 朗读','5.4h','wer',-1.55],
+  ['LibriSpeech test-other','英文 · 复杂','5.1h','wer',1.92],
+  ['CHiME-4 Real','英文 · 噪声','2.3h','wer',4.76]
+];
+const TTS_DATASETS=[
+  ['SeedTTS-Eval ZH','中文 · 零样本','2,000 条','zh',0],
+  ['SeedTTS-Eval EN','英文 · 零样本','2,000 条','en',-.12],
+  ['LibriTTS test-clean','英文 · 朗读','4.8h','en',-.18],
+  ['AISHELL-3 Test','中文 · 多说话人','5.1h','zh',-.24],
+  ['Emilia-ZH Test','中文 · 对话','6.2h','zh',-.31],
+  ['Common Voice EN','英文 · 多口音','7.6h','en',-.36]
+];
+
+function findModel(name){for(const group of Object.keys(DATA)){const model=DATA[group].find(m=>m.name===name);if(model)return {model,group}}}
+function openModel(name){
+  const found=findModel(name);if(!found)return;
+  const {model,group}=found; drawRadar(model);
+  document.querySelector('#drawerLogo').textContent=model.logo;
+  document.querySelector('#drawerTask').textContent=`${group.toUpperCase()} / MODEL METRICS`;
+  document.querySelector('#drawerName').textContent=model.name;
+  document.querySelector('#drawerOrg').textContent=`${model.org} · ${model.kind==='open'?'开源模型':'商业 API'}`;
+  renderModelDetails(model,group);
+  const drawer=document.querySelector('#modelDrawer'),backdrop=document.querySelector('#drawerBackdrop');
+  backdrop.hidden=false;requestAnimationFrame(()=>{drawer.classList.add('open');backdrop.classList.add('open')});
+  drawer.setAttribute('aria-hidden','false');document.body.classList.add('body-locked');
+}
+function closeModel(){
+  const drawer=document.querySelector('#modelDrawer'),backdrop=document.querySelector('#drawerBackdrop');
+  drawer.classList.remove('open');backdrop.classList.remove('open');drawer.setAttribute('aria-hidden','true');document.body.classList.remove('body-locked');
+  setTimeout(()=>backdrop.hidden=true,260);
+}
+function renderModelDetails(model,group){
+  const kpis=group==='asr'
+    ?[['综合 WER',model.score.toFixed(2),'%'],['实时率',model.rtf.toFixed(2),'×'],['每小时成本',model.cost,''],['测试集','6','SETS']]
+    :[['综合 MOS',model.score.toFixed(2),'/ 5'],['实时率',model.rtf.toFixed(2),'×'],['每小时成本',model.cost,''],['测试集','6','SETS']];
+  document.querySelector('#detailKpis').innerHTML=kpis.map(x=>`<article class="detail-kpi"><span>${x[0]}</span><strong>${x[1]} <small>${x[2]}</small></strong></article>`).join('');
+  if(group==='asr'){
+    document.querySelector('#detailHead').innerHTML='<tr><th>测试集</th><th>语言 / 场景</th><th>错误率 ↓</th><th>RTF ↓</th><th>音频规模</th></tr>';
+    document.querySelector('#detailBody').innerHTML=ASR_DATASETS.map((d,i)=>{const error=Math.max(1.4,model.score+d[4]+((model.logo.charCodeAt(0)+i)%5)*.11);const rtf=model.rtf*(1+i*.08);return `<tr><td class="dataset-name">${d[0]}<small>${d[3].toUpperCase()}</small></td><td>${d[1]}</td><td class="metric-good">${error.toFixed(2)}%</td><td>${rtf.toFixed(2)}×</td><td>${d[2]}</td></tr>`}).join('');
+  }else{
+    document.querySelector('#detailHead').innerHTML='<tr><th>测试集</th><th>语言 / 场景</th><th>MOS ↑</th><th>WER ↓</th><th>SIM ↑</th></tr>';
+    document.querySelector('#detailBody').innerHTML=TTS_DATASETS.map((d,i)=>{const mos=Math.max(3.4,model.score+d[4]-((model.logo.charCodeAt(0)+i)%4)*.025);const wer=2.18+i*.47+(4.65-model.score)*1.3;const sim=.82+(model.score-4)*.10-i*.009;return `<tr><td class="dataset-name">${d[0]}<small>${d[2]}</small></td><td>${d[1]}</td><td class="metric-good">${mos.toFixed(2)}</td><td>${wer.toFixed(2)}%</td><td>${sim.toFixed(3)}</td></tr>`}).join('');
+  }
+  const labels=group==='asr'?['准确率','噪声鲁棒性','多语种','推理效率','部署易用性']:['自然度','说话人相似度','可懂度','推理效率','韵律稳定性'];
+  document.querySelector('#profileBars').innerHTML=labels.map((label,i)=>`<div class="profile-row"><span>${label}</span><div class="profile-track"><i style="--score:${model.radar[i]}%"></i></div><b>${model.radar[i]}</b></div>`).join('');
+}
+
 document.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
 typeFilter.addEventListener('change',renderTable);
 document.querySelector('#datasetFilter').addEventListener('change',e=>showToast(`已切换至：${e.target.value}`));
@@ -80,8 +135,7 @@ document.querySelector('#mobileMenu').addEventListener('click',()=>document.quer
 const overlay=document.querySelector('#commandOverlay'),input=document.querySelector('#commandInput'),results=document.querySelector('#commandResults');
 function openSearch(){overlay.hidden=false;input.value='';fillResults('');setTimeout(()=>input.focus(),0)}
 function closeSearch(){overlay.hidden=true}
-function fillResults(q){const items=[...DATA.asr,...DATA.tts].filter(m=>m.name.toLowerCase().includes(q.toLowerCase())).slice(0,6);results.innerHTML=items.length?items.map(m=>`<button class="command-result" data-name="${m.name}"><span>${m.name}</span><small>${m.org} · ${m.kind==='open'?'开源':'API'}</small></button>`).join(''):'<button class="command-result"><span>未找到匹配结果</span></button>';results.querySelectorAll('[data-name]').forEach(b=>b.addEventListener('click',()=>{closeSearch();showToast(`已定位：${b.dataset.name}`)}))}
-document.querySelector('#searchTrigger').addEventListener('click',openSearch);input.addEventListener('input',()=>fillResults(input.value));overlay.addEventListener('click',e=>{if(e.target===overlay)closeSearch()});document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch()}if(e.key==='Escape')closeSearch()});
+function fillResults(q){const items=[...DATA.asr,...DATA.tts].filter(m=>m.name.toLowerCase().includes(q.toLowerCase())).slice(0,6);results.innerHTML=items.length?items.map(m=>`<button class="command-result" data-name="${m.name}"><span>${m.name}</span><small>${m.org} · ${m.kind==='open'?'开源':'API'}</small></button>`).join(''):'<button class="command-result"><span>未找到匹配结果</span></button>';results.querySelectorAll('[data-name]').forEach(b=>b.addEventListener('click',()=>{closeSearch();openModel(b.dataset.name)}))}
+document.querySelector('#searchTrigger').addEventListener('click',openSearch);input.addEventListener('input',()=>fillResults(input.value));overlay.addEventListener('click',e=>{if(e.target===overlay)closeSearch()});document.querySelector('#drawerClose').addEventListener('click',closeModel);document.querySelector('#drawerBackdrop').addEventListener('click',closeModel);document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch()}if(e.key==='Escape'){closeSearch();closeModel()}});
 
-const freq=document.querySelector('#frequency');for(let i=0;i<54;i++){const bar=document.createElement('i');bar.style.height=`${7+Math.random()*29}px`;bar.style.animationDelay=`${(i%9)*.08}s`;freq.appendChild(bar)}
 renderTable();drawRadar(DATA.asr[0]);

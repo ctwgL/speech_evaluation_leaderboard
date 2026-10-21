@@ -28,11 +28,6 @@
       </nav>
 
       <div class="sidebar-bottom">
-        <div class="system-card">
-          <div class="system-line"><span><i></i>评测服务</span><b>运行正常</b></div>
-          <div class="mini-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <small>Last sync · 3 min ago</small>
-        </div>
         <a class="github-link" href="https://github.com/ctwgL/speech_evaluation_leaderboard" target="_blank" rel="noreferrer">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.87c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.57 9.57 0 0 1 12 6.82a9.6 9.6 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.76c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
           GitHub Repository <span>↗</span>
@@ -43,48 +38,34 @@
     <main class="main">
       <header class="topbar">
         <button class="mobile-menu" id="mobileMenu" aria-label="打开菜单">☰</button>
-        <div class="breadcrumb"><span>WORKSPACE</span><i>/</i><b>BENCHMARK OVERVIEW</b></div>
+        <div class="breadcrumb"><span>BENCHMARK</span><i>/</i><b>METRICS</b></div>
         <div class="top-actions">
           <button class="search-trigger" id="searchTrigger"><span>⌕</span>搜索模型或数据集 <kbd>⌘ K</kbd></button>
           <button class="icon-button" id="themeToggle" aria-label="切换主题">◐</button>
-          <a class="run-button" href="https://github.com/ctwgL/speech_evaluation_leaderboard" target="_blank" rel="noreferrer"><span>＋</span>提交评测</a>
         </div>
       </header>
 
       <div class="content" id="overview">
-        <section class="hero">
-          <div>
-            <div class="eyebrow"><span></span> UNIFIED SPEECH INTELLIGENCE BENCHMARK</div>
-            <h1>聆听模型的<br><em>真实能力。</em></h1>
-            <p>用统一、透明、可复现的指标，横向评测开源模型与商业 API。<br>从准确率到延迟，从自然度到成本，一屏掌握。</p>
-          </div>
-          <div class="hero-visual" aria-hidden="true">
-            <div class="orb"><span>98.6<small>TOP SCORE</small></span></div>
-            <div class="wave-ring r1"></div><div class="wave-ring r2"></div><div class="wave-ring r3"></div>
-            <div class="frequency" id="frequency"></div>
-          </div>
-        </section>
-
         <section class="metric-grid" aria-label="核心指标">
           <article class="metric-card accent-cyan">
-            <div class="metric-head"><span>已评测模型</span><i>LIVE</i></div>
-            <strong id="modelTotal">24</strong><small>MODELS</small>
-            <div class="metric-foot positive">↗ 4 <span>本月新增</span></div>
+            <div class="metric-head"><span>ASR 最佳错误率</span><i>WER ↓</i></div>
+            <strong>4.12%</strong><small>WER</small>
+            <div class="metric-foot positive">Paraformer-Large</div>
           </article>
           <article class="metric-card">
-            <div class="metric-head"><span>覆盖数据集</span><i>DATA</i></div>
+            <div class="metric-head"><span>TTS 最佳自然度</span><i>MOS ↑</i></div>
+            <strong>4.63</strong><small>/ 5</small>
+            <div class="metric-foot positive">CosyVoice 2</div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-head"><span>最佳实时率</span><i>RTF ↓</i></div>
+            <strong>0.06×</strong><small>RTF</small>
+            <div class="metric-foot positive">Paraformer-Large</div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-head"><span>覆盖测试集</span><i>DATASETS</i></div>
             <strong>12</strong><small>SETS</small>
-            <div class="metric-foot">6 ASR <span>·</span> 6 TTS</div>
-          </article>
-          <article class="metric-card">
-            <div class="metric-head"><span>累计评测时长</span><i>AUDIO</i></div>
-            <strong>8.4k</strong><small>HOURS</small>
-            <div class="metric-foot positive">↗ 12.8% <span>vs 上月</span></div>
-          </article>
-          <article class="metric-card">
-            <div class="metric-head"><span>评测运行次数</span><i>RUNS</i></div>
-            <strong>1,842</strong><small>RUNS</small>
-            <div class="metric-foot"><span class="pulse"></span>持续更新中</div>
+            <div class="metric-foot">ASR 6 <span>·</span> TTS 6</div>
           </article>
         </section>
 
@@ -107,7 +88,7 @@
                 <tbody id="leaderboardBody"></tbody>
               </table>
             </div>
-            <div class="panel-footer"><span>展示 6 / 24 个模型 · <i></i> 数据为界面演示样例</span><button id="showAll">查看完整榜单 →</button></div>
+            <div class="panel-footer"><span>点击模型行查看各测试集指标 · <i></i> 当前为样例数据</span><button id="showAll">查看完整榜单 →</button></div>
           </article>
 
           <aside class="right-column">
@@ -143,7 +124,6 @@
           </svg>
         </section>
 
-        <footer><span>SpeechBench Lab <i>·</i> Open evaluation for open intelligence.</span><span>数据协议 <i>·</i> 评测方法 <i>·</i> GitHub</span></footer>
       </div>
     </main>
   </div>
@@ -155,6 +135,24 @@
       <small>↑↓ 选择 <b>↵</b> 打开 <b>ESC</b> 关闭</small>
     </div>
   </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+  <aside class="model-drawer" id="modelDrawer" aria-hidden="true" aria-label="模型详细指标">
+    <div class="drawer-head">
+      <div class="drawer-model">
+        <span class="model-logo large" id="drawerLogo">PF</span>
+        <div><div class="section-index" id="drawerTask">ASR / MODEL METRICS</div><h2 id="drawerName">Paraformer-Large</h2><small id="drawerOrg">FunASR · 开源模型</small></div>
+      </div>
+      <button class="drawer-close" id="drawerClose" aria-label="关闭详情">×</button>
+    </div>
+    <div class="drawer-body">
+      <section class="detail-kpis" id="detailKpis"></section>
+      <div class="detail-section-head"><div><span>DATASET BREAKDOWN</span><h3>各测试集指标</h3></div><small>同一评测配置</small></div>
+      <div class="detail-table-wrap"><table class="detail-table"><thead id="detailHead"></thead><tbody id="detailBody"></tbody></table></div>
+      <div class="detail-section-head"><div><span>PROFILE</span><h3>综合能力分布</h3></div></div>
+      <div class="profile-bars" id="profileBars"></div>
+    </div>
+  </aside>
 
   <div class="toast" id="toast">已加入模型对比</div>
   <script src="./app.js"></script>
