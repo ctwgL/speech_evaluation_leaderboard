@@ -19,11 +19,6 @@
       <nav class="nav" aria-label="主要导航">
         <p class="nav-label">工作台</p>
         <a class="nav-item active" href="#overview"><span class="icon">⌁</span>总览<span class="nav-dot"></span></a>
-        <a class="nav-item" href="#compare"><span class="icon">◫</span>模型对比<span class="count" id="compareCount">0</span></a>
-        <p class="nav-label">评测任务</p>
-        <button class="nav-item task-switch active-task" data-task="asr"><span class="task-icon cyan">A</span>语音识别<small>ASR</small></button>
-        <button class="nav-item task-switch" data-task="tts"><span class="task-icon violet">T</span>语音合成<small>TTS</small></button>
-        <button class="nav-item disabled" title="即将开放"><span class="task-icon muted">+</span>更多任务<small>SOON</small></button>
       </nav>
 
       <div class="sidebar-bottom">
@@ -39,8 +34,7 @@
         <button class="mobile-menu" id="mobileMenu" aria-label="打开菜单">☰</button>
         <div class="breadcrumb"><span>BENCHMARK</span><i>/</i><b>METRICS</b></div>
         <div class="top-actions">
-          <label class="file-loader" for="resultFile"><span>⇧</span>加载评测文件<input id="resultFile" type="file" accept=".json,.csv,application/json,text/csv" hidden></label>
-          <span class="source-badge" id="dataSource">内置样例</span>
+          <span class="source-badge loaded" id="dataSource" title="dist/data/benchmark-results.json">固定数据源 · JSON</span>
           <button class="search-trigger" id="searchTrigger"><span>⌕</span>搜索模型或数据集 <kbd>⌘ K</kbd></button>
         </div>
       </header>
@@ -84,11 +78,11 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>排名</th><th>模型</th><th id="primaryMetric">WER ↓</th><th>实时率 ↓</th><th>成本 / 1H</th><th>趋势</th><th>对比</th></tr></thead>
+                <thead><tr><th>排名</th><th>模型</th><th id="primaryMetric">WER ↓</th><th>实时率 ↓</th><th>成本 / 1H</th><th>对比</th></tr></thead>
                 <tbody id="leaderboardBody"></tbody>
               </table>
             </div>
-            <div class="panel-footer"><span id="sourceSummary">点击模型行查看各测试集指标 · <i></i> 当前为样例数据</span><button id="showAll">查看完整榜单 →</button></div>
+            <div class="panel-footer"><span id="sourceSummary">正在解析固定评测文件…</span><span class="file-path">data/benchmark-results.json</span></div>
           </article>
 
           <aside class="right-column">
@@ -107,6 +101,31 @@
       </div>
     </main>
   </div>
+
+  <div class="compare-tray" id="compareTray" hidden>
+    <div class="compare-tray-copy"><small>MODEL COMPARISON</small><b>已选择 <span id="compareCount">0</span> / 3</b></div>
+    <div class="compare-chips" id="compareChips"></div>
+    <button class="compare-launch" id="openCompare" disabled>至少选择 2 个模型</button>
+  </div>
+
+  <section class="compare-page" id="comparePage" hidden aria-label="模型指标对比">
+    <header class="compare-page-head">
+      <button class="compare-back" id="compareBack"><span>←</span> 返回总览</button>
+      <div><div class="section-index">MODEL COMPARISON / METRICS</div><h1><span id="compareTask">ASR</span> 模型全指标对比</h1></div>
+      <div class="compare-page-source"><i></i> 固定数据源</div>
+    </header>
+    <main class="compare-page-body">
+      <section class="compare-models" id="compareModels"></section>
+      <section class="compare-section">
+        <div class="compare-section-title"><div><span>01 / AGGREGATE</span><h2>综合指标横向对比</h2></div><small>柱长统一表示表现更优；数值保留原始量纲</small></div>
+        <div class="compare-metric-grid" id="compareMetricGrid"></div>
+      </section>
+      <section class="compare-section">
+        <div class="compare-section-title"><div><span>02 / DATASET MATRIX</span><h2>测试集逐项对比</h2></div><small>绿色标记为该项最优结果</small></div>
+        <div class="compare-dataset-matrix" id="compareDatasetMatrix"></div>
+      </section>
+    </main>
+  </section>
 
   <div class="command-overlay" id="commandOverlay" hidden>
     <div class="command-box">

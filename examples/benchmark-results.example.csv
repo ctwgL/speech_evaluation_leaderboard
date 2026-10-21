@@ -1,7 +1,0 @@
-task,name,org,kind,logo,cost,ranking_metric,dataset,scenario,size,wer,cer,mos,sim,rtf
-asr,Example-ASR-A,Example Lab,open,EA,免费,wer,,,,4.12,,,,0.06
-asr,Example-ASR-A,Example Lab,open,EA,免费,wer,AISHELL-1,中文普通话,178h,,4.02,,,0.06
-asr,Example-ASR-A,Example Lab,open,EA,免费,wer,LibriSpeech test-clean,英文朗读,5.4h,2.91,,,,0.07
-tts,Example-TTS-A,Example Lab,open,TA,免费,mos,,,,,,4.63,0.883,0.18
-tts,Example-TTS-A,Example Lab,open,TA,免费,mos,SeedTTS-Eval ZH,中文零样本,2000条,2.21,,4.55,0.883,0.18
-tts,Example-TTS-A,Example Lab,open,TA,免费,mos,SeedTTS-Eval EN,英文零样本,2000条,2.68,,4.51,0.874,0.19
