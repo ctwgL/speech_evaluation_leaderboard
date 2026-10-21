@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,7 +19,6 @@
       <nav class="nav" aria-label="主要导航">
         <p class="nav-label">工作台</p>
         <a class="nav-item active" href="#overview"><span class="icon">⌁</span>总览<span class="nav-dot"></span></a>
-        <a class="nav-item" href="#leaderboard"><span class="icon">≡</span>模型榜单</a>
         <a class="nav-item" href="#compare"><span class="icon">◫</span>模型对比<span class="count" id="compareCount">0</span></a>
         <p class="nav-label">评测任务</p>
         <button class="nav-item task-switch active-task" data-task="asr"><span class="task-icon cyan">A</span>语音识别<small>ASR</small></button>
@@ -41,7 +40,6 @@
         <div class="breadcrumb"><span>BENCHMARK</span><i>/</i><b>METRICS</b></div>
         <div class="top-actions">
           <button class="search-trigger" id="searchTrigger"><span>⌕</span>搜索模型或数据集 <kbd>⌘ K</kbd></button>
-          <button class="icon-button" id="themeToggle" aria-label="切换主题">◐</button>
         </div>
       </header>
 
@@ -92,10 +90,9 @@
           </article>
 
           <aside class="right-column">
-            <article class="panel score-panel">
-              <div class="panel-header compact"><div><div class="section-index">02 / RADAR</div><h3>能力雷达</h3></div><button class="dots">•••</button></div>
-              <div class="radar-wrap"><svg id="radar" viewBox="0 0 320 245" role="img" aria-label="模型能力雷达图"></svg></div>
-              <div class="radar-legend"><span><i></i><b id="radarModel">Paraformer-Large</b></span><strong>91.4<small>综合分</small></strong></div>
+            <article class="panel top10-panel">
+              <div class="panel-header compact"><div><div class="section-index">02 / TOP 10</div><h3><span id="top10Task">ASR</span> 模型排行</h3></div><span class="rank-metric" id="rankMetric">WER ↓</span></div>
+              <div class="top10-chart" id="top10Chart" aria-label="Top 10 模型横向柱状图"></div>
             </article>
             <article class="panel dataset-panel">
               <div class="panel-header compact"><div><div class="section-index">03 / DATASETS</div><h3>数据集矩阵</h3></div><span class="update">刚刚更新</span></div>
@@ -107,21 +104,6 @@
               <button class="dataset-more">探索全部 12 个数据集 <span>→</span></button>
             </article>
           </aside>
-        </section>
-
-        <section class="panel trend-panel">
-          <div class="panel-header">
-            <div><div class="section-index">04 / EVOLUTION</div><h2>性能演进趋势</h2></div>
-            <div class="chart-legend"><span class="cyan"></span>开源最佳 <span class="violet"></span>闭源最佳</div>
-          </div>
-          <svg class="trend-chart" viewBox="0 0 1100 250" preserveAspectRatio="none" aria-label="模型性能演进趋势图">
-            <defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#61f2d0" stop-opacity=".24"/><stop offset="1" stop-color="#61f2d0" stop-opacity="0"/></linearGradient></defs>
-            <g class="grid-lines"><path d="M60 30H1060M60 85H1060M60 140H1060M60 195H1060"/></g>
-            <path class="chart-area" d="M60 188 C170 176 180 160 280 156 S430 121 510 128 S660 97 750 88 S910 54 1060 40 L1060 215 L60 215Z"/>
-            <path class="line cyan-line" d="M60 188 C170 176 180 160 280 156 S430 121 510 128 S660 97 750 88 S910 54 1060 40"/>
-            <path class="line violet-line" d="M60 168 C160 140 190 145 280 128 S440 112 510 96 S650 82 750 64 S910 47 1060 32"/>
-            <g class="x-labels"><text x="60" y="240">2022 Q1</text><text x="300" y="240">2023 Q1</text><text x="540" y="240">2024 Q1</text><text x="780" y="240">2025 Q1</text><text x="1010" y="240">2026 Q4</text></g>
-          </svg>
         </section>
 
       </div>
@@ -149,8 +131,6 @@
       <section class="detail-kpis" id="detailKpis"></section>
       <div class="detail-section-head"><div><span>DATASET BREAKDOWN</span><h3>各测试集指标</h3></div><small>同一评测配置</small></div>
       <div class="detail-table-wrap"><table class="detail-table"><thead id="detailHead"></thead><tbody id="detailBody"></tbody></table></div>
-      <div class="detail-section-head"><div><span>PROFILE</span><h3>综合能力分布</h3></div></div>
-      <div class="profile-bars" id="profileBars"></div>
     </div>
   </aside>
 

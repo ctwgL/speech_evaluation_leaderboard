@@ -5,7 +5,11 @@ const DATA = {
     {name:'Whisper Large-v3',org:'OpenAI',kind:'open',logo:'WV',score:5.01,rtf:0.18,cost:'免费',trend:[19,18,17,14,13,10],radar:[91,90,94,78,88]},
     {name:'SenseVoice-Large',org:'Alibaba',kind:'open',logo:'SV',score:5.37,rtf:0.07,cost:'免费',trend:[21,19,18,16,12,11],radar:[89,87,91,92,86]},
     {name:'Google Chirp 3',org:'Google Cloud',kind:'api',logo:'GC',score:5.62,rtf:0.11,cost:'¥1.44',trend:[17,18,15,15,13,12],radar:[88,92,93,80,89]},
-    {name:'Qwen-Audio ASR',org:'Qwen',kind:'open',logo:'QA',score:6.08,rtf:0.13,cost:'免费',trend:[22,20,17,18,15,13],radar:[85,86,88,90,84]}
+    {name:'Qwen-Audio ASR',org:'Qwen',kind:'open',logo:'QA',score:6.08,rtf:0.13,cost:'免费',trend:[22,20,17,18,15,13],radar:[85,86,88,90,84]},
+    {name:'Azure Speech',org:'Microsoft',kind:'api',logo:'AS',score:6.31,rtf:0.10,cost:'¥1.05',trend:[23,21,19,17,15,14],radar:[84,88,91,86,83]},
+    {name:'NVIDIA Canary',org:'NVIDIA',kind:'open',logo:'NC',score:6.55,rtf:0.15,cost:'免费',trend:[24,21,20,18,16,15],radar:[83,86,89,82,85]},
+    {name:'Deepgram Nova-3',org:'Deepgram',kind:'api',logo:'DN',score:6.78,rtf:0.08,cost:'¥1.32',trend:[22,20,19,18,17,16],radar:[82,87,88,91,82]},
+    {name:'Moonshine Base',org:'Useful Sensors',kind:'open',logo:'MB',score:7.14,rtf:0.05,cost:'免费',trend:[25,23,21,20,18,17],radar:[79,82,81,96,87]}
   ],
   tts: [
     {name:'CosyVoice 2',org:'FunAudioLLM',kind:'open',logo:'CV',score:4.63,rtf:0.18,cost:'免费',trend:[10,12,14,16,18,21],radar:[93,91,88,86,92]},
@@ -13,7 +17,11 @@ const DATA = {
     {name:'Seed-TTS',org:'ByteDance',kind:'api',logo:'ST',score:4.51,rtf:0.16,cost:'¥1.68',trend:[9,11,15,16,20,21],radar:[94,93,89,88,90]},
     {name:'Fish Speech 1.5',org:'Fish Audio',kind:'open',logo:'FS',score:4.42,rtf:0.22,cost:'免费',trend:[10,12,13,17,18,20],radar:[90,89,92,91,85]},
     {name:'GPT-SoVITS',org:'RVC-Boss',kind:'open',logo:'GS',score:4.28,rtf:0.26,cost:'免费',trend:[8,10,12,14,17,19],radar:[86,88,90,93,82]},
-    {name:'Azure Neural TTS',org:'Microsoft',kind:'api',logo:'AZ',score:4.19,rtf:0.14,cost:'¥1.05',trend:[12,13,15,16,17,18],radar:[89,90,86,84,87]}
+    {name:'Azure Neural TTS',org:'Microsoft',kind:'api',logo:'AZ',score:4.19,rtf:0.14,cost:'¥1.05',trend:[12,13,15,16,17,18],radar:[89,90,86,84,87]},
+    {name:'MiniMax Speech-02',org:'MiniMax',kind:'api',logo:'MM',score:4.12,rtf:0.17,cost:'¥1.26',trend:[10,12,13,15,16,17],radar:[88,86,84,87,85]},
+    {name:'F5-TTS',org:'SWivid',kind:'open',logo:'F5',score:4.06,rtf:0.24,cost:'免费',trend:[8,9,11,13,15,16],radar:[84,85,87,83,86]},
+    {name:'XTTS-v2',org:'Coqui',kind:'open',logo:'XT',score:3.98,rtf:0.28,cost:'免费',trend:[7,9,10,12,14,15],radar:[82,84,86,80,84]},
+    {name:'Google Cloud TTS',org:'Google Cloud',kind:'api',logo:'GT',score:3.91,rtf:0.13,cost:'¥1.18',trend:[9,10,11,12,13,14],radar:[81,83,85,89,82]}
   ]
 };
 
@@ -51,7 +59,7 @@ function setTask(next) {
   document.querySelectorAll('[data-task]').forEach(b=>{
     b.classList.toggle(b.classList.contains('task-switch')?'active-task':'active',b.dataset.task===task);
   });
-  renderTable(); drawRadar(DATA[task][0]);
+  renderTable(); renderTop10();
 }
 
 function onCompare(e){
@@ -60,16 +68,18 @@ function onCompare(e){
   document.querySelector('#compareCount').textContent=selected.size;
 }
 
-function polygonPoints(values,cx=160,cy=122,r=82){return values.map((v,i)=>{const a=-Math.PI/2+i*Math.PI*2/5,rr=r*v/100;return `${cx+Math.cos(a)*rr},${cy+Math.sin(a)*rr}`}).join(' ')}
-function drawRadar(model){
-  const labels=['准确性','鲁棒性','多语种','效率','易用性'];
-  const grids=[.25,.5,.75,1].map(s=>`<polygon class="radar-grid" points="${polygonPoints([s*100,s*100,s*100,s*100,s*100])}"/>`).join('');
-  const axes=labels.map((_,i)=>{const p=polygonPoints([100,100,100,100,100]).split(' ')[i];return `<line class="radar-axis" x1="160" y1="122" x2="${p.split(',')[0]}" y2="${p.split(',')[1]}"/>`}).join('');
-  const text=labels.map((l,i)=>{const a=-Math.PI/2+i*Math.PI*2/5;return `<text x="${160+Math.cos(a)*105}" y="${125+Math.sin(a)*101}" text-anchor="middle">${l}</text>`}).join('');
-  const points=polygonPoints(model.radar);
-  const dots=points.split(' ').map(p=>`<circle class="radar-point" cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="2.4"/>`).join('');
-  document.querySelector('#radar').innerHTML=grids+axes+`<polygon class="radar-shape" points="${points}"/>`+dots+text;
-  document.querySelector('#radarModel').textContent=model.name;
+function renderTop10(){
+  const models=[...DATA[task]].slice(0,10);
+  const values=models.map(m=>task==='asr'?1/m.score:m.score);
+  const max=Math.max(...values),min=Math.min(...values);
+  document.querySelector('#top10Task').textContent=task.toUpperCase();
+  document.querySelector('#rankMetric').textContent=task==='asr'?'WER ↓':'MOS ↑';
+  document.querySelector('#top10Chart').innerHTML=models.map((m,i)=>{
+    const width=42+(values[i]-min)/(max-min||1)*58;
+    const value=task==='asr'?`${m.score.toFixed(2)}%`:m.score.toFixed(2);
+    return `<button class="top10-row" data-name="${m.name}" aria-label="查看 ${m.name} 指标"><span class="top10-rank">${String(i+1).padStart(2,'0')}</span><span class="top10-main"><span class="top10-label"><b>${m.name}</b><em>${value}</em></span><span class="top10-track"><i style="width:${width}%"></i></span></span></button>`;
+  }).join('');
+  document.querySelectorAll('.top10-row').forEach(row=>row.addEventListener('click',()=>openModel(row.dataset.name)));
 }
 
 function showToast(message){const t=document.querySelector('#toast');t.textContent=message;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove('show'),2200)}
@@ -94,7 +104,7 @@ const TTS_DATASETS=[
 function findModel(name){for(const group of Object.keys(DATA)){const model=DATA[group].find(m=>m.name===name);if(model)return {model,group}}}
 function openModel(name){
   const found=findModel(name);if(!found)return;
-  const {model,group}=found; drawRadar(model);
+  const {model,group}=found;
   document.querySelector('#drawerLogo').textContent=model.logo;
   document.querySelector('#drawerTask').textContent=`${group.toUpperCase()} / MODEL METRICS`;
   document.querySelector('#drawerName').textContent=model.name;
@@ -121,15 +131,12 @@ function renderModelDetails(model,group){
     document.querySelector('#detailHead').innerHTML='<tr><th>测试集</th><th>语言 / 场景</th><th>MOS ↑</th><th>WER ↓</th><th>SIM ↑</th></tr>';
     document.querySelector('#detailBody').innerHTML=TTS_DATASETS.map((d,i)=>{const mos=Math.max(3.4,model.score+d[4]-((model.logo.charCodeAt(0)+i)%4)*.025);const wer=2.18+i*.47+(4.65-model.score)*1.3;const sim=.82+(model.score-4)*.10-i*.009;return `<tr><td class="dataset-name">${d[0]}<small>${d[2]}</small></td><td>${d[1]}</td><td class="metric-good">${mos.toFixed(2)}</td><td>${wer.toFixed(2)}%</td><td>${sim.toFixed(3)}</td></tr>`}).join('');
   }
-  const labels=group==='asr'?['准确率','噪声鲁棒性','多语种','推理效率','部署易用性']:['自然度','说话人相似度','可懂度','推理效率','韵律稳定性'];
-  document.querySelector('#profileBars').innerHTML=labels.map((label,i)=>`<div class="profile-row"><span>${label}</span><div class="profile-track"><i style="--score:${model.radar[i]}%"></i></div><b>${model.radar[i]}</b></div>`).join('');
 }
 
 document.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
 typeFilter.addEventListener('change',renderTable);
 document.querySelector('#datasetFilter').addEventListener('change',e=>showToast(`已切换至：${e.target.value}`));
 document.querySelector('#showAll').addEventListener('click',()=>showToast('完整榜单将在数据接入后开放'));
-document.querySelector('#themeToggle').addEventListener('click',()=>{const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark'});
 document.querySelector('#mobileMenu').addEventListener('click',()=>document.querySelector('#sidebar').classList.toggle('open'));
 
 const overlay=document.querySelector('#commandOverlay'),input=document.querySelector('#commandInput'),results=document.querySelector('#commandResults');
@@ -138,4 +145,4 @@ function closeSearch(){overlay.hidden=true}
 function fillResults(q){const items=[...DATA.asr,...DATA.tts].filter(m=>m.name.toLowerCase().includes(q.toLowerCase())).slice(0,6);results.innerHTML=items.length?items.map(m=>`<button class="command-result" data-name="${m.name}"><span>${m.name}</span><small>${m.org} · ${m.kind==='open'?'开源':'API'}</small></button>`).join(''):'<button class="command-result"><span>未找到匹配结果</span></button>';results.querySelectorAll('[data-name]').forEach(b=>b.addEventListener('click',()=>{closeSearch();openModel(b.dataset.name)}))}
 document.querySelector('#searchTrigger').addEventListener('click',openSearch);input.addEventListener('input',()=>fillResults(input.value));overlay.addEventListener('click',e=>{if(e.target===overlay)closeSearch()});document.querySelector('#drawerClose').addEventListener('click',closeModel);document.querySelector('#drawerBackdrop').addEventListener('click',closeModel);document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch()}if(e.key==='Escape'){closeSearch();closeModel()}});
 
-renderTable();drawRadar(DATA.asr[0]);
+renderTable();renderTop10();
