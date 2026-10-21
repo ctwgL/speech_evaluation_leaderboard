@@ -2,6 +2,8 @@ const fs = require('fs');
 
 const file = 'dist/data/benchmark-results.json';
 const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+const html = fs.readFileSync('dist/index.html', 'utf8');
+const app = fs.readFileSync('dist/app.js', 'utf8');
 const models = payload.models || [];
 const asr = models.filter(model => model.task === 'asr');
 const tts = models.filter(model => model.task === 'tts');
@@ -26,5 +28,9 @@ for (const model of tts) {
 
 const uniqueNames = new Set(models.map(model => model.name));
 if (uniqueNames.size !== models.length) throw new Error('Model names must be unique');
+if (!html.includes('id="themeToggle"') || !html.includes('id="compareRadar"')) throw new Error('Theme or radar UI missing');
+if (!app.includes("'立即对比 →'") || !app.includes('rankMotion')) throw new Error('Floating compare or rank motion missing');
+if (!app.includes('magnitudePercent(metricValue(m,metric),values)')) throw new Error('Top 10 bars must reflect raw metric magnitude');
+if (html.includes('固定数据源') || html.includes('<th>趋势</th>')) throw new Error('Removed source/trend copy reappeared');
 
 console.log(`fixed data smoke test: ok (${asr.length} ASR, ${tts.length} TTS)`);

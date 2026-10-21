@@ -34,7 +34,7 @@
         <button class="mobile-menu" id="mobileMenu" aria-label="打开菜单">☰</button>
         <div class="breadcrumb"><span>BENCHMARK</span><i>/</i><b>METRICS</b></div>
         <div class="top-actions">
-          <span class="source-badge loaded" id="dataSource" title="dist/data/benchmark-results.json">固定数据源 · JSON</span>
+          <button class="theme-toggle" id="themeToggle" aria-label="切换深浅主题" title="切换深浅主题"><span class="theme-sun">☼</span><span class="theme-moon">◐</span></button>
           <button class="search-trigger" id="searchTrigger"><span>⌕</span>搜索模型或数据集 <kbd>⌘ K</kbd></button>
         </div>
       </header>
@@ -82,7 +82,7 @@
                 <tbody id="leaderboardBody"></tbody>
               </table>
             </div>
-            <div class="panel-footer"><span id="sourceSummary">正在解析固定评测文件…</span><span class="file-path">data/benchmark-results.json</span></div>
+            <div class="panel-footer"><span id="sourceSummary">正在解析评测结果…</span><span class="model-total" id="modelTotal">— MODELS</span></div>
           </article>
 
           <aside class="right-column">
@@ -105,23 +105,27 @@
   <div class="compare-tray" id="compareTray" hidden>
     <div class="compare-tray-copy"><small>MODEL COMPARISON</small><b>已选择 <span id="compareCount">0</span> / 3</b></div>
     <div class="compare-chips" id="compareChips"></div>
-    <button class="compare-launch" id="openCompare" disabled>至少选择 2 个模型</button>
+    <button class="compare-launch" id="openCompare" disabled>再选择 1 个模型</button>
   </div>
 
   <section class="compare-page" id="comparePage" hidden aria-label="模型指标对比">
     <header class="compare-page-head">
       <button class="compare-back" id="compareBack"><span>←</span> 返回总览</button>
       <div><div class="section-index">MODEL COMPARISON / METRICS</div><h1><span id="compareTask">ASR</span> 模型全指标对比</h1></div>
-      <div class="compare-page-source"><i></i> 固定数据源</div>
+      <button class="theme-toggle compare-theme" id="compareThemeToggle" aria-label="切换深浅主题"><span class="theme-sun">☼</span><span class="theme-moon">◐</span></button>
     </header>
     <main class="compare-page-body">
       <section class="compare-models" id="compareModels"></section>
+      <section class="compare-section radar-section">
+        <div class="compare-section-title"><div><span>01 / METRIC RADAR</span><h2>多维指标轮廓</h2></div><small>所有维度均已统一为：越靠外表现越优</small></div>
+        <div class="compare-radar" id="compareRadar"></div>
+      </section>
       <section class="compare-section">
-        <div class="compare-section-title"><div><span>01 / AGGREGATE</span><h2>综合指标横向对比</h2></div><small>柱长统一表示表现更优；数值保留原始量纲</small></div>
+        <div class="compare-section-title"><div><span>02 / AGGREGATE</span><h2>综合指标横向对比</h2></div><small>柱长统一表示表现更优；数值保留原始量纲</small></div>
         <div class="compare-metric-grid" id="compareMetricGrid"></div>
       </section>
       <section class="compare-section">
-        <div class="compare-section-title"><div><span>02 / DATASET MATRIX</span><h2>测试集逐项对比</h2></div><small>绿色标记为该项最优结果</small></div>
+        <div class="compare-section-title"><div><span>03 / DATASET MATRIX</span><h2>测试集逐项对比</h2></div><small>颜色越深代表相对表现越优</small></div>
         <div class="compare-dataset-matrix" id="compareDatasetMatrix"></div>
       </section>
     </main>
