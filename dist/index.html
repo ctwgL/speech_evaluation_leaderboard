@@ -39,6 +39,8 @@
         <button class="mobile-menu" id="mobileMenu" aria-label="打开菜单">☰</button>
         <div class="breadcrumb"><span>BENCHMARK</span><i>/</i><b>METRICS</b></div>
         <div class="top-actions">
+          <label class="file-loader" for="resultFile"><span>⇧</span>加载评测文件<input id="resultFile" type="file" accept=".json,.csv,application/json,text/csv" hidden></label>
+          <span class="source-badge" id="dataSource">内置样例</span>
           <button class="search-trigger" id="searchTrigger"><span>⌕</span>搜索模型或数据集 <kbd>⌘ K</kbd></button>
         </div>
       </header>
@@ -46,24 +48,24 @@
       <div class="content" id="overview">
         <section class="metric-grid" aria-label="核心指标">
           <article class="metric-card accent-cyan">
-            <div class="metric-head"><span>ASR 最佳错误率</span><i>WER ↓</i></div>
-            <strong>4.12%</strong><small>WER</small>
-            <div class="metric-foot positive">Paraformer-Large</div>
+            <div class="metric-head"><span>ASR 最佳错误率</span><i id="asrBestDirection">WER ↓</i></div>
+            <strong id="asrBestValue">4.12%</strong><small id="asrBestUnit">WER</small>
+            <div class="metric-foot positive" id="asrBestModel">Paraformer-Large</div>
           </article>
           <article class="metric-card">
-            <div class="metric-head"><span>TTS 最佳自然度</span><i>MOS ↑</i></div>
-            <strong>4.63</strong><small>/ 5</small>
-            <div class="metric-foot positive">CosyVoice 2</div>
+            <div class="metric-head"><span>TTS 最佳自然度</span><i id="ttsBestDirection">MOS ↑</i></div>
+            <strong id="ttsBestValue">4.63</strong><small id="ttsBestUnit">/ 5</small>
+            <div class="metric-foot positive" id="ttsBestModel">CosyVoice 2</div>
           </article>
           <article class="metric-card">
             <div class="metric-head"><span>最佳实时率</span><i>RTF ↓</i></div>
-            <strong>0.06×</strong><small>RTF</small>
-            <div class="metric-foot positive">Paraformer-Large</div>
+            <strong id="rtfBestValue">0.06×</strong><small>RTF</small>
+            <div class="metric-foot positive" id="rtfBestModel">Paraformer-Large</div>
           </article>
           <article class="metric-card">
             <div class="metric-head"><span>覆盖测试集</span><i>DATASETS</i></div>
-            <strong>12</strong><small>SETS</small>
-            <div class="metric-foot">ASR 6 <span>·</span> TTS 6</div>
+            <strong id="datasetCount">12</strong><small>SETS</small>
+            <div class="metric-foot" id="datasetSplit">ASR 6 <span>·</span> TTS 6</div>
           </article>
         </section>
 
@@ -86,7 +88,7 @@
                 <tbody id="leaderboardBody"></tbody>
               </table>
             </div>
-            <div class="panel-footer"><span>点击模型行查看各测试集指标 · <i></i> 当前为样例数据</span><button id="showAll">查看完整榜单 →</button></div>
+            <div class="panel-footer"><span id="sourceSummary">点击模型行查看各测试集指标 · <i></i> 当前为样例数据</span><button id="showAll">查看完整榜单 →</button></div>
           </article>
 
           <aside class="right-column">
@@ -96,11 +98,7 @@
             </article>
             <article class="panel dataset-panel">
               <div class="panel-header compact"><div><div class="section-index">03 / DATASETS</div><h3>数据集矩阵</h3></div><span class="update">刚刚更新</span></div>
-              <div class="dataset-list">
-                <button><span class="dataset-icon">中</span><span><b>AISHELL-1</b><small>178h · 中文普通话</small></span><em>128</em></button>
-                <button><span class="dataset-icon violet">EN</span><span><b>LibriSpeech</b><small>960h · 英文朗读</small></span><em>96</em></button>
-                <button><span class="dataset-icon orange">NO</span><span><b>CHiME-4</b><small>18h · 真实噪声</small></span><em>72</em></button>
-              </div>
+              <div class="dataset-list" id="datasetList"></div>
               <button class="dataset-more">探索全部 12 个数据集 <span>→</span></button>
             </article>
           </aside>

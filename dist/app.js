@@ -1,4 +1,4 @@
-const DATA = {
+let DATA = {
   asr: [
     {name:'Paraformer-Large',org:'FunASR',kind:'open',logo:'PF',score:4.12,rtf:0.06,cost:'免费',trend:[18,16,17,12,11,8],radar:[94,92,86,88,90]},
     {name:'Seed-ASR',org:'ByteDance',kind:'api',logo:'SE',score:4.46,rtf:0.09,cost:'¥1.20',trend:[20,18,15,16,12,9],radar:[93,95,90,84,91]},
@@ -25,10 +25,22 @@ const DATA = {
   ]
 };
 
+let rankingMetric={asr:'wer',tts:'mos'};
+const LOWER_IS_BETTER=new Set(['wer','cer','rtf','latency','latency_ms','cost','memory','params']);
+const METRIC_UNITS={wer:'%',cer:'%',mos:'/ 5',sim:'',rtf:'×',accuracy:'%',pesq:'',stoi:'',sisdr:' dB',sdr:' dB'};
+const metricLabel=key=>String(key||'score').toUpperCase();
+const metricArrow=key=>LOWER_IS_BETTER.has(String(key).toLowerCase())?'↓':'↑';
+const metricUnit=key=>METRIC_UNITS[String(key).toLowerCase()]??'';
+const metricValue=(model,key)=>Number(model.metrics?.[key]??model.score);
+const sortModels=(models,key)=>[...models].sort((a,b)=>LOWER_IS_BETTER.has(key)?metricValue(a,key)-metricValue(b,key):metricValue(b,key)-metricValue(a,key));
+const formatMetric=(value,key)=>`${Number(value).toFixed(key==='sim'?3:2)}${metricUnit(key)}`;
+const esc=value=>String(value??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+
 let task = 'asr';
 const selected = new Set();
 const body = document.querySelector('#leaderboardBody');
 const typeFilter = document.querySelector('#typeFilter');
+const datasetFilter = document.querySelector('#datasetFilter');
 
 function sparkline(values, kind) {
   const max=Math.max(...values), min=Math.min(...values);
@@ -37,13 +49,22 @@ function sparkline(values, kind) {
 }
 
 function renderTable() {
-  const filtered=DATA[task].filter(m=>typeFilter.value==='all'||m.kind===typeFilter.value);
-  body.innerHTML=filtered.map((m,i)=>`<tr data-model="${m.name}" tabindex="0" aria-label="查看 ${m.name} 的各测试集指标">
+  const aggregateMetric=rankingMetric[task],dataset=datasetFilter.value;
+  const entries=DATA[task].map(model=>{
+    if(dataset==='综合评测')return {model,key:aggregateMetric,value:metricValue(model,aggregateMetric)};
+    const result=(model.datasets||[]).find(d=>d.name===dataset);if(!result)return null;
+    const key=result.metrics?.[aggregateMetric]!=null?aggregateMetric:(task==='asr'?(result.metrics?.wer!=null?'wer':'cer'):(result.metrics?.mos!=null?'mos':'sim'));
+    return {model,key,value:Number(result.metrics?.[key])};
+  }).filter(Boolean).filter(x=>typeFilter.value==='all'||x.model.kind===typeFilter.value);
+  const key=entries[0]?.key||aggregateMetric;entries.sort((a,b)=>LOWER_IS_BETTER.has(key)?a.value-b.value:b.value-a.value);
+  document.querySelector('#primaryMetric').textContent=`${metricLabel(key)} ${metricArrow(key)}`;
+  if(!entries.length){body.innerHTML='<tr><td colspan="7" class="empty-state">当前筛选条件下无模型数据</td></tr>';return}
+  body.innerHTML=entries.map(({model:m,value,key},i)=>`<tr data-model="${esc(m.name)}" tabindex="0" aria-label="查看 ${esc(m.name)} 的各测试集指标">
     <td><span class="rank ${i<3?'top':''}">${String(i+1).padStart(2,'0')}</span></td>
-    <td><div class="model"><span class="model-logo">${m.logo}</span><span><b>${m.name}</b><small><i class="type-dot ${m.kind}"></i>${m.org}</small></span></div></td>
-    <td><span class="score ${i===0?'best':''}">${m.score.toFixed(2)}${task==='asr'?'%':' / 5'}</span></td>
-    <td>${m.rtf.toFixed(2)}×</td><td class="cost ${m.cost==='免费'?'free':''}">${m.cost}</td><td>${sparkline(m.trend,m.kind)}</td>
-    <td><input class="compare-check" type="checkbox" aria-label="将 ${m.name} 加入对比" data-name="${m.name}" ${selected.has(m.name)?'checked':''}></td>
+    <td><div class="model"><span class="model-logo">${esc(m.logo)}</span><span><b>${esc(m.name)}</b><small><i class="type-dot ${m.kind}"></i>${esc(m.org)}</small></span></div></td>
+    <td><span class="score ${i===0?'best':''}">${formatMetric(value,key)}</span></td>
+    <td>${Number(m.rtf||0).toFixed(2)}×</td><td class="cost ${m.cost==='免费'?'free':''}">${esc(m.cost)}</td><td>${sparkline(m.trend,m.kind)}</td>
+    <td><input class="compare-check" type="checkbox" aria-label="将 ${esc(m.name)} 加入对比" data-name="${esc(m.name)}" ${selected.has(m.name)?'checked':''}></td>
   </tr>`).join('');
   body.querySelectorAll('.compare-check').forEach(el=>el.addEventListener('change',onCompare));
   body.querySelectorAll('tr[data-model]').forEach(row=>{
@@ -55,11 +76,17 @@ function renderTable() {
 function setTask(next) {
   task=next;
   document.querySelector('#taskTitle').textContent=task==='asr'?'语音识别':'语音合成';
-  document.querySelector('#primaryMetric').textContent=task==='asr'?'WER ↓':'MOS ↑';
+  const metric=rankingMetric[task];
   document.querySelectorAll('[data-task]').forEach(b=>{
     b.classList.toggle(b.classList.contains('task-switch')?'active-task':'active',b.dataset.task===task);
   });
-  renderTable(); renderTop10();
+  updateDatasetFilter();renderTable();renderTop10();
+}
+
+function updateDatasetFilter(){
+  const current=datasetFilter.value,datasets=[...new Set(DATA[task].flatMap(m=>(m.datasets||[]).map(d=>d.name)))];
+  datasetFilter.innerHTML='<option>综合评测</option>'+datasets.map(name=>`<option>${esc(name)}</option>`).join('');
+  if(datasets.includes(current))datasetFilter.value=current;
 }
 
 function onCompare(e){
@@ -69,15 +96,16 @@ function onCompare(e){
 }
 
 function renderTop10(){
-  const models=[...DATA[task]].slice(0,10);
-  const values=models.map(m=>task==='asr'?1/m.score:m.score);
+  const metric=rankingMetric[task];
+  const models=sortModels(DATA[task],metric).slice(0,10);
+  const values=models.map(m=>LOWER_IS_BETTER.has(metric)?1/Math.max(metricValue(m,metric),.0001):metricValue(m,metric));
   const max=Math.max(...values),min=Math.min(...values);
   document.querySelector('#top10Task').textContent=task.toUpperCase();
-  document.querySelector('#rankMetric').textContent=task==='asr'?'WER ↓':'MOS ↑';
+  document.querySelector('#rankMetric').textContent=`${metricLabel(metric)} ${metricArrow(metric)}`;
   document.querySelector('#top10Chart').innerHTML=models.map((m,i)=>{
     const width=42+(values[i]-min)/(max-min||1)*58;
-    const value=task==='asr'?`${m.score.toFixed(2)}%`:m.score.toFixed(2);
-    return `<button class="top10-row" data-name="${m.name}" aria-label="查看 ${m.name} 指标"><span class="top10-rank">${String(i+1).padStart(2,'0')}</span><span class="top10-main"><span class="top10-label"><b>${m.name}</b><em>${value}</em></span><span class="top10-track"><i style="width:${width}%"></i></span></span></button>`;
+    const value=formatMetric(metricValue(m,metric),metric);
+    return `<button class="top10-row" data-name="${esc(m.name)}" aria-label="查看 ${esc(m.name)} 指标"><span class="top10-rank">${String(i+1).padStart(2,'0')}</span><span class="top10-main"><span class="top10-label"><b>${esc(m.name)}</b><em>${value}</em></span><span class="top10-track"><i style="width:${width}%"></i></span></span></button>`;
   }).join('');
   document.querySelectorAll('.top10-row').forEach(row=>row.addEventListener('click',()=>openModel(row.dataset.name)));
 }
@@ -120,22 +148,107 @@ function closeModel(){
   setTimeout(()=>backdrop.hidden=true,260);
 }
 function renderModelDetails(model,group){
-  const kpis=group==='asr'
-    ?[['综合 WER',model.score.toFixed(2),'%'],['实时率',model.rtf.toFixed(2),'×'],['每小时成本',model.cost,''],['测试集','6','SETS']]
-    :[['综合 MOS',model.score.toFixed(2),'/ 5'],['实时率',model.rtf.toFixed(2),'×'],['每小时成本',model.cost,''],['测试集','6','SETS']];
+  const primary=rankingMetric[group],datasetTotal=model.datasets?.length||6;
+  const kpis=[[`综合 ${metricLabel(primary)}`,metricValue(model,primary).toFixed(primary==='sim'?3:2),metricUnit(primary)],['实时率',Number(model.rtf||0).toFixed(2),'×'],['每小时成本',model.cost,''],['测试集',datasetTotal,'SETS']];
   document.querySelector('#detailKpis').innerHTML=kpis.map(x=>`<article class="detail-kpi"><span>${x[0]}</span><strong>${x[1]} <small>${x[2]}</small></strong></article>`).join('');
   if(group==='asr'){
-    document.querySelector('#detailHead').innerHTML='<tr><th>测试集</th><th>语言 / 场景</th><th>错误率 ↓</th><th>RTF ↓</th><th>音频规模</th></tr>';
-    document.querySelector('#detailBody').innerHTML=ASR_DATASETS.map((d,i)=>{const error=Math.max(1.4,model.score+d[4]+((model.logo.charCodeAt(0)+i)%5)*.11);const rtf=model.rtf*(1+i*.08);return `<tr><td class="dataset-name">${d[0]}<small>${d[3].toUpperCase()}</small></td><td>${d[1]}</td><td class="metric-good">${error.toFixed(2)}%</td><td>${rtf.toFixed(2)}×</td><td>${d[2]}</td></tr>`}).join('');
+    document.querySelector('#detailHead').innerHTML=`<tr><th>测试集</th><th>语言 / 场景</th><th>${metricLabel(primary)} ${metricArrow(primary)}</th><th>RTF ↓</th><th>音频规模</th></tr>`;
+    if(model.datasets?.length){
+      document.querySelector('#detailBody').innerHTML=model.datasets.map(d=>{const key=d.metrics?.[primary]!=null?primary:(d.metrics?.wer!=null?'wer':'cer');return `<tr><td class="dataset-name">${esc(d.name)}<small>${metricLabel(key)}</small></td><td>${esc(d.scenario||d.language||'—')}</td><td class="metric-good">${formatMetric(d.metrics?.[key]??0,key)}</td><td>${formatMetric(d.metrics?.rtf??model.rtf,'rtf')}</td><td>${esc(d.size||d.samples||'—')}</td></tr>`}).join('');
+    }else{
+      document.querySelector('#detailBody').innerHTML=ASR_DATASETS.map((d,i)=>{const error=Math.max(1.4,model.score+d[4]+((model.logo.charCodeAt(0)+i)%5)*.11);const rtf=model.rtf*(1+i*.08);return `<tr><td class="dataset-name">${d[0]}<small>${d[3].toUpperCase()}</small></td><td>${d[1]}</td><td class="metric-good">${error.toFixed(2)}%</td><td>${rtf.toFixed(2)}×</td><td>${d[2]}</td></tr>`}).join('');
+    }
   }else{
     document.querySelector('#detailHead').innerHTML='<tr><th>测试集</th><th>语言 / 场景</th><th>MOS ↑</th><th>WER ↓</th><th>SIM ↑</th></tr>';
-    document.querySelector('#detailBody').innerHTML=TTS_DATASETS.map((d,i)=>{const mos=Math.max(3.4,model.score+d[4]-((model.logo.charCodeAt(0)+i)%4)*.025);const wer=2.18+i*.47+(4.65-model.score)*1.3;const sim=.82+(model.score-4)*.10-i*.009;return `<tr><td class="dataset-name">${d[0]}<small>${d[2]}</small></td><td>${d[1]}</td><td class="metric-good">${mos.toFixed(2)}</td><td>${wer.toFixed(2)}%</td><td>${sim.toFixed(3)}</td></tr>`}).join('');
+    if(model.datasets?.length){
+      document.querySelector('#detailBody').innerHTML=model.datasets.map(d=>`<tr><td class="dataset-name">${esc(d.name)}<small>${esc(d.size||d.samples||'—')}</small></td><td>${esc(d.scenario||d.language||'—')}</td><td class="metric-good">${formatMetric(d.metrics?.mos??0,'mos')}</td><td>${formatMetric(d.metrics?.wer??0,'wer')}</td><td>${formatMetric(d.metrics?.sim??0,'sim')}</td></tr>`).join('');
+    }else{
+      document.querySelector('#detailBody').innerHTML=TTS_DATASETS.map((d,i)=>{const mos=Math.max(3.4,model.score+d[4]-((model.logo.charCodeAt(0)+i)%4)*.025);const wer=2.18+i*.47+(4.65-model.score)*1.3;const sim=.82+(model.score-4)*.10-i*.009;return `<tr><td class="dataset-name">${d[0]}<small>${d[2]}</small></td><td>${d[1]}</td><td class="metric-good">${mos.toFixed(2)}</td><td>${wer.toFixed(2)}%</td><td>${sim.toFixed(3)}</td></tr>`}).join('');
+    }
   }
+}
+
+function normalizeMetrics(metrics={}){
+  return Object.fromEntries(Object.entries(metrics).map(([key,value])=>[key.toLowerCase(),Number(value)]).filter(([,value])=>Number.isFinite(value)));
+}
+function normalizeModel(raw,group){
+  const metrics=normalizeMetrics(raw.metrics);
+  const primary=rankingMetric[group];
+  if(metrics[primary]==null&&Number.isFinite(Number(raw.score)))metrics[primary]=Number(raw.score);
+  if(metrics.rtf==null&&Number.isFinite(Number(raw.rtf)))metrics.rtf=Number(raw.rtf);
+  const score=Number(metrics[primary]);
+  if(!raw.name||!Number.isFinite(score))return null;
+  const datasets=(raw.datasets||[]).map(d=>({...d,name:d.name||d.dataset||'Unnamed',metrics:normalizeMetrics(d.metrics)}));
+  const initials=String(raw.name).split(/[\s-_]+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  const trend=Array.isArray(raw.trend)&&raw.trend.length>1?raw.trend.map(Number):[score*1.08,score*1.05,score*1.03,score*1.02,score*1.01,score];
+  return {name:String(raw.name),org:String(raw.org||raw.provider||'—'),kind:String(raw.kind||raw.type||'open').toLowerCase()==='api'?'api':'open',logo:String(raw.logo||initials),score,metrics,rtf:Number(metrics.rtf||0),cost:raw.cost??'—',trend,datasets};
+}
+function normalizePayload(payload){
+  rankingMetric={asr:String(payload.rankingMetrics?.asr||payload.ranking_metrics?.asr||'wer').toLowerCase(),tts:String(payload.rankingMetrics?.tts||payload.ranking_metrics?.tts||'mos').toLowerCase()};
+  const groups={asr:[],tts:[]};
+  if(Array.isArray(payload.models)){
+    payload.models.forEach(raw=>{const group=String(raw.task||raw.group||'').toLowerCase();if(groups[group]){const model=normalizeModel(raw,group);if(model)groups[group].push(model)}});
+  }else{
+    ['asr','tts'].forEach(group=>(payload[group]||[]).forEach(raw=>{const model=normalizeModel(raw,group);if(model)groups[group].push(model)}));
+  }
+  if(!groups.asr.length&&!groups.tts.length)throw new Error('文件中没有可用的 ASR/TTS 模型记录');
+  groups.asr=sortModels(groups.asr,rankingMetric.asr);groups.tts=sortModels(groups.tts,rankingMetric.tts);
+  return groups;
+}
+function parseCSV(text){
+  const parseLine=line=>{const cells=[];let value='',quoted=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'&&line[i+1]==='"'&&quoted){value+='"';i++}else if(ch==='"'){quoted=!quoted}else if(ch===','&&!quoted){cells.push(value.trim());value=''}else value+=ch}cells.push(value.trim());return cells};
+  const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(line=>line.trim());
+  if(lines.length<2)throw new Error('CSV 至少需要表头和一行数据');
+  const headers=parseLine(lines[0]).map(x=>x.toLowerCase());
+  const rows=lines.slice(1).map(line=>Object.fromEntries(headers.map((h,i)=>[h,parseLine(line)[i]??''])));
+  const groups=new Map(),metricKeys=['wer','cer','mos','sim','rtf','accuracy','pesq','stoi','sisdr','sdr','latency','latency_ms'];
+  rows.forEach(row=>{
+    const taskName=(row.task||'').toLowerCase(),name=row.name||row.model;if(!['asr','tts'].includes(taskName)||!name)return;
+    if(row.ranking_metric)rankingMetric[taskName]=row.ranking_metric.toLowerCase();
+    const key=`${taskName}::${name}`;
+    if(!groups.has(key))groups.set(key,{task:taskName,name,org:row.org||row.provider,kind:row.kind||row.type,logo:row.logo,cost:row.cost,metrics:{},datasets:[]});
+    const model=groups.get(key),metrics={};metricKeys.forEach(k=>{if(row[k]!==''&&Number.isFinite(Number(row[k])))metrics[k]=Number(row[k])});
+    if(row.dataset){model.datasets.push({name:row.dataset,scenario:row.scenario||row.language,size:row.size||row.samples,metrics})}else Object.assign(model.metrics,metrics);
+  });
+  const models=[...groups.values()];
+  models.forEach(model=>{const primary=rankingMetric[model.task];if(model.metrics[primary]==null){const vals=model.datasets.map(d=>d.metrics[primary]).filter(Number.isFinite);if(vals.length)model.metrics[primary]=vals.reduce((a,b)=>a+b,0)/vals.length}if(model.metrics.rtf==null){const vals=model.datasets.map(d=>d.metrics.rtf).filter(Number.isFinite);if(vals.length)model.metrics.rtf=vals.reduce((a,b)=>a+b,0)/vals.length}});
+  return {rankingMetrics:{...rankingMetric},models};
+}
+function renderDatasetList(){
+  const counts=new Map();[...DATA.asr,...DATA.tts].forEach(model=>(model.datasets||[]).forEach(d=>{const old=counts.get(d.name)||{name:d.name,scenario:d.scenario||d.language||'测试集',size:d.size||d.samples||'—',count:0};old.count++;counts.set(d.name,old)}));
+  const datasets=counts.size?[...counts.values()].sort((a,b)=>b.count-a.count).slice(0,3):[
+    {name:'AISHELL-1',scenario:'中文普通话',size:'178h',count:DATA.asr.length},{name:'LibriSpeech',scenario:'英文朗读',size:'960h',count:DATA.asr.length},{name:'SeedTTS-Eval',scenario:'零样本合成',size:'4,000 条',count:DATA.tts.length}
+  ];
+  document.querySelector('#datasetList').innerHTML=datasets.map((d,i)=>`<button><span class="dataset-icon ${i===1?'violet':i===2?'orange':''}">${i===0?'01':i===1?'02':'03'}</span><span><b>${esc(d.name)}</b><small>${esc(d.size)} · ${esc(d.scenario)}</small></span><em>${d.count}</em></button>`).join('');
+}
+function updateSummary(){
+  const asr=sortModels(DATA.asr,rankingMetric.asr)[0],tts=sortModels(DATA.tts,rankingMetric.tts)[0],all=[...DATA.asr,...DATA.tts];
+  document.querySelector('#asrBestDirection').textContent=`${metricLabel(rankingMetric.asr)} ${metricArrow(rankingMetric.asr)}`;
+  document.querySelector('#asrBestValue').textContent=asr?formatMetric(metricValue(asr,rankingMetric.asr),rankingMetric.asr):'—';
+  document.querySelector('#asrBestUnit').textContent=metricLabel(rankingMetric.asr);document.querySelector('#asrBestModel').textContent=asr?.name||'无数据';
+  document.querySelector('#ttsBestDirection').textContent=`${metricLabel(rankingMetric.tts)} ${metricArrow(rankingMetric.tts)}`;
+  document.querySelector('#ttsBestValue').textContent=tts?formatMetric(metricValue(tts,rankingMetric.tts),rankingMetric.tts):'—';
+  document.querySelector('#ttsBestUnit').textContent=metricLabel(rankingMetric.tts);document.querySelector('#ttsBestModel').textContent=tts?.name||'无数据';
+  const fastest=[...all].filter(m=>Number(m.rtf)>0).sort((a,b)=>a.rtf-b.rtf)[0];document.querySelector('#rtfBestValue').textContent=fastest?formatMetric(fastest.rtf,'rtf'):'—';document.querySelector('#rtfBestModel').textContent=fastest?.name||'无数据';
+  const asrSets=new Set(DATA.asr.flatMap(m=>(m.datasets||[]).map(d=>d.name))),ttsSets=new Set(DATA.tts.flatMap(m=>(m.datasets||[]).map(d=>d.name)));
+  const asrCount=DATA.asr.length?(asrSets.size||6):0,ttsCount=DATA.tts.length?(ttsSets.size||6):0;document.querySelector('#datasetCount').textContent=asrCount+ttsCount;document.querySelector('#datasetSplit').innerHTML=`ASR ${asrCount} <span>·</span> TTS ${ttsCount}`;
+}
+function refreshAll(){
+  if(!DATA[task].length)task=DATA.asr.length?'asr':'tts';
+  setTask(task);updateSummary();renderDatasetList();
+}
+async function loadResultFile(file){
+  const loader=document.querySelector('.file-loader'),badge=document.querySelector('#dataSource');loader.classList.add('loading');badge.textContent='解析中…';badge.className='source-badge';
+  try{
+    const text=await file.text();const payload=file.name.toLowerCase().endsWith('.csv')?parseCSV(text):JSON.parse(text);DATA=normalizePayload(payload);selected.clear();document.querySelector('#compareCount').textContent='0';refreshAll();badge.textContent=file.name;badge.title=file.name;badge.classList.add('loaded');document.querySelector('#sourceSummary').innerHTML=`数据源：${esc(file.name)} · <i></i> 已解析 ${DATA.asr.length+DATA.tts.length} 个模型`;showToast(`已加载 ${DATA.asr.length+DATA.tts.length} 个模型`);
+  }catch(error){badge.textContent='文件解析失败';badge.classList.add('error');showToast(error.message||'文件解析失败')}
+  finally{loader.classList.remove('loading');document.querySelector('#resultFile').value=''}
 }
 
 document.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
 typeFilter.addEventListener('change',renderTable);
-document.querySelector('#datasetFilter').addEventListener('change',e=>showToast(`已切换至：${e.target.value}`));
+datasetFilter.addEventListener('change',renderTable);
+document.querySelector('#resultFile').addEventListener('change',e=>{if(e.target.files?.[0])loadResultFile(e.target.files[0])});
 document.querySelector('#showAll').addEventListener('click',()=>showToast('完整榜单将在数据接入后开放'));
 document.querySelector('#mobileMenu').addEventListener('click',()=>document.querySelector('#sidebar').classList.toggle('open'));
 
@@ -145,4 +258,4 @@ function closeSearch(){overlay.hidden=true}
 function fillResults(q){const items=[...DATA.asr,...DATA.tts].filter(m=>m.name.toLowerCase().includes(q.toLowerCase())).slice(0,6);results.innerHTML=items.length?items.map(m=>`<button class="command-result" data-name="${m.name}"><span>${m.name}</span><small>${m.org} · ${m.kind==='open'?'开源':'API'}</small></button>`).join(''):'<button class="command-result"><span>未找到匹配结果</span></button>';results.querySelectorAll('[data-name]').forEach(b=>b.addEventListener('click',()=>{closeSearch();openModel(b.dataset.name)}))}
 document.querySelector('#searchTrigger').addEventListener('click',openSearch);input.addEventListener('input',()=>fillResults(input.value));overlay.addEventListener('click',e=>{if(e.target===overlay)closeSearch()});document.querySelector('#drawerClose').addEventListener('click',closeModel);document.querySelector('#drawerBackdrop').addEventListener('click',closeModel);document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch()}if(e.key==='Escape'){closeSearch();closeModel()}});
 
-renderTable();renderTop10();
+refreshAll();
