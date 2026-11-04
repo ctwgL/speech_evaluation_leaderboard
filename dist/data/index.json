@@ -5,7 +5,7 @@
     "tts": "mos"
   },
   "modelFiles": [
-    "./models/asr/azure-speech.json",
-    "./models/tts/azure-neural-tts.json"
+    "./models/asr/test-speech.json",
+    "./models/tts/test-tts.json"
   ]
 }

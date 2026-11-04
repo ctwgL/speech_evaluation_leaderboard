@@ -1,7 +1,7 @@
 {
   "task": "asr",
-  "name": "Azure Speech",
-  "org": "Microsoft",
+  "name": "test Speech",
+  "org": "xxx",
   "kind": "api",
   "logo": "AS",
   "cost": "¥1.05",

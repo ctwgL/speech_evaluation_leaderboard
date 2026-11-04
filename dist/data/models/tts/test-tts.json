@@ -1,7 +1,7 @@
 {
   "task": "tts",
-  "name": "Azure Neural TTS",
-  "org": "Microsoft",
+  "name": "testTTS",
+  "org": "xxx",
   "kind": "api",
   "logo": "AZ",
   "cost": "¥1.05",
