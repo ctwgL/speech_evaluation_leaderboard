@@ -40,6 +40,7 @@
       </header>
 
       <div class="content" id="overview">
+        <div class="page-heading"><span class="section-index">SPEECHBENCH / EVALUATION</span><h1>语音模型评测工作台</h1><p>探索模型表现，比较各测试集指标，了解模型能力。</p></div>
         <section class="metric-grid" aria-label="核心指标">
           <article class="metric-card accent-cyan">
             <div class="metric-head"><span>ASR 最佳错误率</span><i id="asrBestDirection">WER ↓</i></div>
@@ -146,9 +147,10 @@
         <span class="model-logo large" id="drawerLogo">PF</span>
         <div><div class="section-index" id="drawerTask">ASR / MODEL METRICS</div><h2 id="drawerName">Paraformer-Large</h2><small id="drawerOrg">FunASR · 开源模型</small></div>
       </div>
-      <button class="drawer-close" id="drawerClose" aria-label="关闭详情">×</button>
+      <button class="drawer-close" id="drawerClose" aria-label="返回总览">← 返回总览</button>
     </div>
     <div class="drawer-body">
+      <section class="model-introduction" id="modelIntroduction"></section>
       <section class="detail-kpis" id="detailKpis"></section>
       <div class="detail-section-head"><div><span>DATASET BREAKDOWN</span><h3>各测试集指标</h3></div><small>同一评测配置</small></div>
       <div class="detail-table-wrap"><table class="detail-table"><thead id="detailHead"></thead><tbody id="detailBody"></tbody></table></div>

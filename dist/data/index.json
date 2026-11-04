@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "rankingMetrics": {
+    "asr": "wer",
+    "tts": "mos"
+  },
+  "modelFiles": [
+    "./models/asr/azure-speech.json",
+    "./models/tts/azure-neural-tts.json"
+  ]
+}

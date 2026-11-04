@@ -1,7 +1,11 @@
 const fs = require('fs');
 
-const file = 'dist/data/benchmark-results.json';
-const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const { buildIndex, dataDir } = require('../scripts/build-data-index.cjs');
+const index = buildIndex();
+assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dataDir, 'index.json'), 'utf8')), index, '索引过期，请重新生成');
+const payload = { ...index, models: index.modelFiles.map(file => JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'))) };
 const html = fs.readFileSync('dist/index.html', 'utf8');
 const app = fs.readFileSync('dist/app.js', 'utf8');
 const models = payload.models || [];
@@ -10,7 +14,7 @@ const tts = models.filter(model => model.task === 'tts');
 
 if (payload.rankingMetrics?.asr !== 'wer') throw new Error('ASR ranking metric must be WER');
 if (payload.rankingMetrics?.tts !== 'mos') throw new Error('TTS ranking metric must be MOS');
-if (asr.length !== 10 || tts.length !== 10) throw new Error('Fixed file must contain 10 ASR and 10 TTS models');
+if (!models.length) throw new Error('No model files found');
 
 for (const model of asr) {
   for (const metric of ['wer', 'cer', 'rtf', 'latency_ms']) {
