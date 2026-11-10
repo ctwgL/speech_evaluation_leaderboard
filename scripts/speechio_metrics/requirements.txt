@@ -1,0 +1,5 @@
+# SpeechIO English text normalization and error_rate_en dependencies.
+pynini>=2.1.5,<3
+regex
+joblib
+tqdm

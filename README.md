@@ -1,115 +1,165 @@
-# SpeechBench Lab
+# 语音评测数据集
 
-面向开源/闭源语音模型与 API 的统一评测可视化榜单。目前覆盖 ASR 与 TTS，支持总览、单模型分测试集指标和 2–3 个同任务模型的全指标视觉对比。页面提供浅色/暗色主题、指标热力与进度条、排名变化动效以及归一化多指标雷达图。
+本项目使用自动语音识别（ASR）和语音合成（TTS）两类数据集，覆盖中英文朗读、会议、
+真实节目、地域口音，以及零样本、跨语种和情感语音合成等场景。下列样本数与
+时长来自当前本地数据版本；时长为输入或参考音频的累计时长，不代表模型生成耗时。
 
-## 本地预览
+## 在线评测结果
 
-```bash
-node scripts/build-data-index.cjs
-python3 -m http.server 8000 -d dist
-```
-
-访问 `http://localhost:8000`。
-
-## 更新评测结果
-
-数据按模型独立维护，目录结构如下：
-
-```text
-dist/data/
-├── config.json                   # 数据格式版本、ASR/TTS 排名指标
-├── index.json                    # 脚本生成的文件索引，不手动维护
-└── models/
-    ├── asr/paraformer-large.json  # 一个文件对应一个模型
-    └── tts/cosyvoice-2.json
-```
-
-新增或修改模型时，编辑 `models/` 下的 JSON，再运行 `node scripts/build-data-index.cjs`。脚本递归扫描所有模型文件，校验数据并生成只包含文件路径和全局配置的轻量索引，不会把模型内容合成大文件。GitHub Pages 部署前会自动执行此步骤；本地预览也需先运行。删除或重命名文件后同样重新生成索引。
-
-页面读取索引后并行加载各模型文件，自动汇总榜单、详情和对比数据。静态托管不能直接枚举目录，因此通过自动生成索引发现新文件。任一文件读取失败会提示错误，避免悄悄遗漏模型导致榜单不完整。
-
-单个模型文件示例（可复制现有模型文件作为模板）：
-
-```json
-{
-  "task": "asr",
-  "name": "Example ASR",
-  "org": "Example Team",
-  "kind": "open",
-  "logo": "EA",
-  "cost": "免费",
-  "metrics": { "wer": 4.12, "cer": 3.76, "rtf": 0.06, "latency_ms": 82 },
-  "datasets": [
-    {
-      "name": "Example Dataset",
-      "scenario": "中文 · 普通话",
-      "size": "10h",
-      "metrics": { "wer": 4.12, "cer": 3.76 }
-    }
-  ],
-  "introduction": {
-    "summary": "模型简介",
-    "specifications": { "模型架构": "Transformer", "参数量": "100M" },
-    "architecture": {
-      "image": "./assets/example-architecture.svg",
-      "alt": "模型架构图",
-      "caption": "架构说明及来源"
-    },
-    "links": [{ "label": "项目主页", "url": "https://example.com" }]
-  }
-}
-```
-
-`task` 为 `asr` 或 `tts`，`name` 全局唯一，`kind` 为 `open` 或 `api`。指标键使用小写，值为数值，缺失指标直接省略；`metrics` 必须包含 `config.json` 的 `rankingMetrics` 对应指标。`metrics` 保存综合评测结果，`datasets[].metrics` 保存单测试集结果，页面不会自动取平均值。`introduction` 保存模型介绍、规格、架构图及参考链接。建议文件名使用稳定的英文小写短横线命名。
-
-排序方向已内置：`WER`、`CER`、`RTF`、延迟和成本越小越好；`MOS`、`SIM`、准确率、`PESQ`、`STOI`、`SI-SDR` 等越大越好。
-
-## 数据校验
-
-```bash
-node scripts/build-data-index.cjs
-node tests/fixed-data-smoke.cjs
-node tests/model-profile.cjs
-node tests/data-loader.cjs
-```
-
-## GitHub Pages
-
-仓库已配置 `.github/workflows/deploy-pages.yml`。推送到 `master` 或 `main` 后会自动发布 `dist/`，预期地址：
+ASR 与 TTS 模型的性能指标通过网页进行可视化展示，可访问：
 
 <https://ctwgL.github.io/speech_evaluation_leaderboard/>
 
-首次使用时，请在仓库 **Settings → Pages → Build and deployment** 中将 Source 设为 **GitHub Actions**。
+该网站用于查看语音识别和语音合成模型的综合指标、各测试集结果及模型间的性能对比。
 
-## 模型介绍与详情页
+## 数据规模总览
 
-每个模型的指标和介绍维护在自己的 `dist/data/models/<任务>/<模型名>.json` 文件中。新增模型无需修改 HTML 或 JavaScript，生成索引即可。
+| 任务 | 数据集家族 | 子集数 | 样本数 | 总时长 |
+| --- | ---: | ---: | ---: | ---: |
+| 语音识别（ASR） | 7 | 55 | 158,292 | 197:21:59（197.37 小时） |
+| 语音合成（TTS） | 2 | 8 | 12,951 | 21:17:17（21.29 小时） |
 
-每个模型的 `introduction` 示例：
+## 语音识别数据集
 
-```json
-{
-  "summary": "模型基本介绍，可使用换行分段。",
-  "specifications": {
-    "模型架构": "填写架构名称",
-    "参数量": "填写参数量",
-    "模型文件大小": "填写文件大小",
-    "支持语言": "填写支持的语言",
-    "许可证": "填写许可证"
-  },
-  "architecture": {
-    "image": "./assets/example-architecture.svg",
-    "alt": "模型架构图",
-    "caption": "架构图说明及来源"
-  },
-  "links": [
-    { "label": "项目主页", "url": "https://example.com" }
-  ]
-}
-```
+ASR 评测以中文为主，同时包含英文朗读和演讲。中文数据通常使用 CER，
+英文数据通常使用 WER；跨模型比较时应保证使用相同子集和文本归一化规则。
 
-规格字段可以自由增减。架构图路径相对于页面地址，也可使用 HTTPS 图片地址；将图片放入 `dist/assets/`。空字段显示待补充，未提供架构图时保留展示区域。仓库现有模型介绍和规格尚待填入真实资料。
+### 数据集家族与评测目的
 
-`metrics` 保存模型全部综合指标；`datasets[].metrics` 保存各测试集指标，详情表格自动取指标并集，缺失值显示 `—`，新增指标会自动展示。测试集的 `name`、`scenario`、`size` 也均来自此文件。
+| 数据集家族 | 语言与场景 | 子集数 | 样本数 | 总时长 | 主要评测目的 |
+| --- | --- | ---: | ---: | ---: | --- |
+| AISHELL-1/2 | 中文普通话朗读；AISHELL-2 含 Android、iOS 和麦克风通道 | 4 | 22,176 | 22:02:43 | 普通话识别及跨设备、跨录音通道鲁棒性 |
+| AliMeeting | 中文会议语音；近场/远场，eval/test 划分 | 4 | 32,813 | 32:53:31 | 多说话人会议、重叠语音和远场拾音 |
+| King-ASR | 12 类中文地域重口音普通话，使用手机录制 | 12 | 35,265 | 42:47:44 | 不同地域重口音的识别鲁棒性 |
+| LibriSpeech | 英文有声书朗读；test-clean/test-other | 2 | 5,559 | 10:44:42 | 英文朗读语音及不同声学难度 |
+| SpeechIO 中文测试集 | 中文真实节目与网络内容，涵盖新闻、访谈、教育、直播、文娱和垂直领域 | 27 | 43,178 | 65:46:43 | 真实场景、长尾词汇和跨领域泛化能力 |
+| TED-LIUM 3 | 英文 TED 演讲；legacy dev/test | 2 | 1,662 | 4:12:55 | 英文演讲和自发语音识别 |
+| 中文口音/方言扩展集 | 湖北重口音、四川、武汉和郑州日常语句 | 4 | 17,639 | 18:53:41 | 地域口音与日常口语识别 |
 
-详情页使用 `#model/模型名称` 路由，支持复制链接、刷新后直接打开，以及浏览器前进/后退。
+SpeechIO 的 27 个中文子集来自公开网络内容并由专业人员标注，场景跨度较大。例如，
+`ZH00001` 为新闻播报，`ZH00002` 为电视访谈，`ZH00005` 为在线教育，`ZH00006`～
+`ZH00007` 为直播内容，后续子集还覆盖播客、相声、脱口秀、动画、体育解说、汽车、
+房地产、产品评测、农业和历史哲学等领域。保留原始编号便于与官方榜单对齐。
+
+数据集参考：[SpeechIO Leaderboard](https://github.com/SpeechColab/Leaderboard)。
+
+<details>
+<summary>AISHELL、AliMeeting、LibriSpeech 与 TED-LIUM 3 明细</summary>
+
+| 子集 | 样本数 | 时长（小时） | 时长（h:mm:ss） |
+| --- | ---: | ---: | ---: |
+| `speechio/AISHELL1_TEST` | 7,176 | 10.03 | 10:01:49 |
+| `speechio/AISHELL2_ANDROID_TEST` | 5,000 | 4.00 | 4:00:18 |
+| `speechio/AISHELL2_IOS_TEST` | 5,000 | 4.00 | 4:00:18 |
+| `speechio/AISHELL2_MIC_TEST` | 5,000 | 4.00 | 4:00:18 |
+| `speechio/ALIMEETING_EVAL_FAR_FIELD` | 4,495 | 4.62 | 4:37:29 |
+| `speechio/ALIMEETING_EVAL_NEAR_FIELD` | 4,504 | 4.64 | 4:38:23 |
+| `speechio/ALIMEETING_TEST_FAR_FIELD` | 11,891 | 11.80 | 11:47:43 |
+| `speechio/ALIMEETING_TEST_NEAR_FIELD` | 11,923 | 11.83 | 11:49:56 |
+| `speechio/LIBRISPEECH_TEST_CLEAN` | 2,620 | 5.40 | 5:24:12 |
+| `speechio/LIBRISPEECH_TEST_OTHER` | 2,939 | 5.34 | 5:20:30 |
+| `speechio/TEDLIUM_RELEASE3_LEGACY_DEV` | 507 | 1.60 | 1:35:53 |
+| `speechio/TEDLIUM_RELEASE3_LEGACY_TEST` | 1,155 | 2.62 | 2:37:02 |
+
+</details>
+
+<details>
+<summary>King-ASR 与中文口音/方言扩展集明细</summary>
+
+| 子集 | 方言/口音类型 | 样本数 | 时长（小时） | 时长（h:mm:ss） |
+| --- | --- | ---: | ---: | ---: |
+| `speechio/King-ASR-384-1` | 福建重口音普通话（手机） | 1,600 | 1.84 | 1:50:15 |
+| `speechio/King-ASR-384-2` | 广东重口音普通话（手机） | 1,554 | 2.15 | 2:08:43 |
+| `speechio/King-ASR-384-3` | 湖南重口音普通话（手机） | 1,200 | 1.44 | 1:26:26 |
+| `speechio/King-ASR-384-4` | 江西重口音普通话（手机） | 1,585 | 2.23 | 2:13:31 |
+| `speechio/King-ASR-384-9` | 吴重口音普通话（手机） | 5,196 | 7.02 | 7:01:13 |
+| `speechio/King-ASR-384-10` | 天津重口音普通话（手机） | 3,000 | 4.05 | 4:03:12 |
+| `speechio/King-ASR-384-11` | 安徽重口音普通话（手机） | 5,277 | 5.54 | 5:32:16 |
+| `speechio/King-ASR-384-12` | 山东重口音普通话（手机） | 3,000 | 3.18 | 3:11:05 |
+| `speechio/King-ASR-384-13` | 河南重口音普通话（手机） | 2,985 | 3.10 | 3:06:12 |
+| `speechio/King-ASR-384-17` | 湖北重口音普通话（手机） | 3,000 | 3.53 | 3:31:43 |
+| `speechio/King-ASR-384-18` | 甘肃重口音普通话（手机） | 5,277 | 6.60 | 6:35:56 |
+| `speechio/King-ASR-881` | 四川重口音普通话（手机） | 1,591 | 2.12 | 2:07:12 |
+| `speechio/hubei_zhongkouyin` | 湖北重口音普通话 | 903 | 1.66 | 1:39:25 |
+| `speechio/sichuan_daily_sentence` | 四川日常语句 | 6,522 | 7.06 | 7:03:31 |
+| `speechio/wuhan_daily_sentence` | 武汉日常语句 | 5,082 | 5.14 | 5:08:24 |
+| `speechio/zhengzhou_daily_sentence` | 郑州日常语句 | 5,132 | 5.04 | 5:02:21 |
+
+</details>
+
+<details>
+<summary>SpeechIO 中文测试集明细</summary>
+
+| 子集 | 样本数 | 时长（小时） | 时长（h:mm:ss） |
+| --- | ---: | ---: | ---: |
+| `speechio/SPEECHIO_ASR_ZH00000` | 879 | 1.60 | 1:36:09 |
+| `speechio/SPEECHIO_ASR_ZH00001` | 5,069 | 8.72 | 8:43:03 |
+| `speechio/SPEECHIO_ASR_ZH00002` | 2,993 | 2.75 | 2:45:08 |
+| `speechio/SPEECHIO_ASR_ZH00003` | 1,683 | 2.39 | 2:23:28 |
+| `speechio/SPEECHIO_ASR_ZH00004` | 1,311 | 2.82 | 2:49:16 |
+| `speechio/SPEECHIO_ASR_ZH00005` | 3,148 | 4.38 | 4:22:46 |
+| `speechio/SPEECHIO_ASR_ZH00006` | 1,561 | 1.66 | 1:39:32 |
+| `speechio/SPEECHIO_ASR_ZH00007` | 770 | 0.98 | 0:58:56 |
+| `speechio/SPEECHIO_ASR_ZH00008` | 884 | 1.28 | 1:16:55 |
+| `speechio/SPEECHIO_ASR_ZH00009` | 3,466 | 4.64 | 4:38:12 |
+| `speechio/SPEECHIO_ASR_ZH00010` | 2,251 | 4.21 | 4:12:54 |
+| `speechio/SPEECHIO_ASR_ZH00011` | 1,053 | 3.45 | 3:27:12 |
+| `speechio/SPEECHIO_ASR_ZH00012` | 1,170 | 3.39 | 3:23:33 |
+| `speechio/SPEECHIO_ASR_ZH00013` | 1,321 | 1.78 | 1:46:40 |
+| `speechio/SPEECHIO_ASR_ZH00014` | 856 | 1.01 | 1:00:38 |
+| `speechio/SPEECHIO_ASR_ZH00015` | 1,168 | 2.15 | 2:08:51 |
+| `speechio/SPEECHIO_ASR_ZH00016` | 1,201 | 1.01 | 1:00:45 |
+| `speechio/SPEECHIO_ASR_ZH00017` | 1,271 | 1.80 | 1:47:57 |
+| `speechio/SPEECHIO_ASR_ZH00018` | 899 | 0.85 | 0:51:12 |
+| `speechio/SPEECHIO_ASR_ZH00019` | 615 | 0.70 | 0:41:43 |
+| `speechio/SPEECHIO_ASR_ZH00020` | 1,590 | 2.18 | 2:10:53 |
+| `speechio/SPEECHIO_ASR_ZH00021` | 1,035 | 1.74 | 1:44:07 |
+| `speechio/SPEECHIO_ASR_ZH00022` | 1,026 | 1.68 | 1:40:42 |
+| `speechio/SPEECHIO_ASR_ZH00023` | 1,528 | 2.11 | 2:06:50 |
+| `speechio/SPEECHIO_ASR_ZH00024` | 1,930 | 2.65 | 2:39:02 |
+| `speechio/SPEECHIO_ASR_ZH00025` | 1,164 | 1.41 | 1:24:41 |
+| `speechio/SPEECHIO_ASR_ZH00026` | 1,336 | 2.43 | 2:25:38 |
+
+</details>
+
+## 语音合成数据集
+
+TTS 评测同时关注内容正确性、说话人相似度、音质和表达能力。客观评测通常使用中文
+CER/英文 WER、说话人相似度（SIM）与 DNSMOS；情感子集还可计算情感一致性，主观子集
+用于人工听测。统计时长是提示音频或参考音频时长，生成结果应单独保存和计时。
+
+### CV3-Eval
+
+[CV3-Eval](https://github.com/QwenAudio/CV3-Eval) 面向真实开放环境下的零样本语音合成，
+参考音频来自 Common Voice、FLEURS、EmoBox 及网络音频，覆盖多语言/方言、跨语种、
+多领域、多录音环境、情感和风格。其客观子集用于多语种音色克隆、跨语种音色克隆和
+情感克隆；主观子集用于表现力音色克隆、表现力续说及中文口音克隆。
+
+| 子集 | 评测内容 | 样本数 | 时长（小时） | 时长（h:mm:ss） |
+| --- | --- | ---: | ---: | ---: |
+| `CV3-Eval/zero_shot` | 多语种零样本音色克隆 | 4,624 | 8.41 | 8:24:20 |
+| `CV3-Eval/cross_lingual_zeroshot` | 跨语种零样本音色克隆 | 2,524 | 4.70 | 4:42:10 |
+| `CV3-Eval/emotion_zeroshot` | 情感零样本音色克隆 | 300 | 0.41 | 0:24:22 |
+| `CV3-Eval/subjective_zeroshot` | 零样本合成主观听测 | 194 | 0.40 | 0:24:01 |
+| `CV3-Eval/subjective_continue` | 表现力语音续说主观听测 | 180 | 0.26 | 0:15:29 |
+| `CV3-Eval/zero_shot_clone_10speak` | 10 说话人零样本克隆预留子集；当前未配置音频 | 0 | 0.00 | 0:00:00 |
+| **小计** |  | **7,822** | **14.17** | **14:10:22** |
+
+### Seed-TTS Eval
+
+[Seed-TTS Eval](https://github.com/BytedanceSpeech/seed-tts-eval) 是中英文域外零样本合成
+客观评测集。每条数据包含提示文本、提示音频、待合成文本和可选的真实目标音频，主要
+评估合成内容正确性（CER/WER）和说话人相似度（SIM）。
+
+| 子集 | 语言 | 样本数 | 时长（小时） | 时长（h:mm:ss） |
+| --- | --- | ---: | ---: | ---: |
+| `seed_tts_eval_dataset/zh` | 中文普通话 | 3,030 | 4.51 | 4:30:29 |
+| `seed_tts_eval_dataset/en` | 英文 | 2,099 | 2.61 | 2:36:26 |
+| **小计** |  | **5,129** | **7.12** | **7:06:55** |
+
+## 统计口径
+
+- “样本数”按当前本地清单中的音频或评测条目计数，不等同于上游完整数据集规模。
+- “总时长”由各子集的 `h:mm:ss` 累加；表中的十进制小时仅保留两位小数，可能存在舍入差异。
+- `CV3-Eval/zero_shot_clone_10speak` 当前样本数为 0，保留该条目用于说明目录与后续数据接入。
+- 评测报告应记录实际使用的子集、版本、语言、文本归一化方式和指标实现，以保证结果可复现。
