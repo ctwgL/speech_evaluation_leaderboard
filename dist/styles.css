@@ -56,3 +56,6 @@ body{background-image:none;font-size:14px}.noise{display:none}.sidebar{width:248
 
 /* company logo images */
 .model-logo.has-image{width:28px;padding:2px;border-radius:50%;background:transparent}.model-logo.has-image img{display:block;width:100%;height:100%;object-fit:contain;border-radius:50%}.model-logo.large.has-image{width:48px;padding:3px}.compare-model-id>.model-logo.has-image{width:42px;height:42px;padding:3px}.logo-fallback[hidden]{display:none}
+
+/* model type colors: open source = green circle, commercial API = orange diamond */
+:root{--open-color:#22d3a0;--api-color:#ff9b50}[data-theme="light"]{--open-color:#07855f;--api-color:#c65316}[data-theme="dark"]{--open-color:#45ddb0;--api-color:#ffad6a}.type-dot,.type-dot.open,.legend i.open{width:7px;height:7px;background:var(--open-color);box-shadow:0 0 0 2px color-mix(in srgb,var(--open-color) 18%,transparent)}.type-dot.api,.legend i.api{width:7px;height:7px;border-radius:1px;background:var(--api-color);box-shadow:0 0 0 2px color-mix(in srgb,var(--api-color) 18%,transparent);transform:rotate(45deg)}

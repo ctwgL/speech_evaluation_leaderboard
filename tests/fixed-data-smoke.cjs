@@ -8,6 +8,7 @@ assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dataDir, 'index.json'), 'u
 const payload = { ...index, models: index.modelFiles.map(file => JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'))) };
 const html = fs.readFileSync('dist/index.html', 'utf8');
 const app = fs.readFileSync('dist/app.js', 'utf8');
+const styles = fs.readFileSync('dist/styles.css', 'utf8');
 const models = payload.models || [];
 if (index.modelFiles.some(file => path.basename(file) === 'template.json')) throw new Error('Template files must not be published as models');
 const asr = models.filter(model => model.task === 'asr');
@@ -38,7 +39,11 @@ for (const model of models.filter(model => model.logo_image)) {
   if (!fs.existsSync(logo) || !fs.statSync(logo).isFile()) throw new Error(`${model.name} logo image missing`);
 }
 if (!html.includes('id="themeToggle"') || !html.includes('id="compareRadar"')) throw new Error('Theme or radar UI missing');
+if (!html.includes('id="datasetMore"') || !html.includes('id="datasetMoreCount"')) throw new Error('Dataset explorer controls missing');
+if (html.includes('<th>实时率') || html.includes('<th>成本')) throw new Error('Leaderboard must not display RTF or cost columns');
 if (!app.includes("'立即对比 →'") || !app.includes('rankMotion')) throw new Error('Floating compare or rank motion missing');
+if (!app.includes("openSearch('datasets')") || !app.includes("showDatasetRanking(button.dataset.group")) throw new Error('Dataset explorer interactions missing');
+if (!styles.includes('--open-color:') || !styles.includes('--api-color:') || !styles.includes('.type-dot.api')) throw new Error('Distinct model type colors missing');
 if (!app.includes('magnitudePercent(metricValue(m,metric),values)')) throw new Error('Top 10 bars must reflect raw metric magnitude');
 if (html.includes('固定数据源') || html.includes('<th>趋势</th>')) throw new Error('Removed source/trend copy reappeared');
 
