@@ -29,6 +29,14 @@ function buildIndex() {
     if (names.has(model.name)) fail(file, `模型名称重复：${model.name}`);
     names.add(model.name);
     if (!['open', 'api'].includes(model.kind)) fail(file, 'kind 必须为 open 或 api');
+    if (model.logo_image != null) {
+      if (typeof model.logo_image !== 'string' || !model.logo_image.trim()) fail(file, 'logo_image 必须为非空字符串');
+      const distDir = path.resolve(dataDir, '..');
+      const logoFile = path.resolve(distDir, model.logo_image);
+      if (!logoFile.startsWith(distDir + path.sep) || !fs.existsSync(logoFile) || !fs.statSync(logoFile).isFile()) {
+        fail(file, `logo_image 文件不存在或超出 dist 目录：${model.logo_image}`);
+      }
+    }
     const checkMetrics = (metrics, label) => {
       if (!metrics || typeof metrics !== 'object' || Array.isArray(metrics)) fail(file, `${label} 必须为对象`);
       for (const [key, value] of Object.entries(metrics)) {

@@ -5,7 +5,6 @@
     "tts": "mos"
   },
   "modelFiles": [
-    "./models/asr/test-speech.json",
-    "./models/tts/test-tts.json"
+    "./models/asr/soundai.json"
   ]
 }

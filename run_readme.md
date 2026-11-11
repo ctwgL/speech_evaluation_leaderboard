@@ -38,13 +38,13 @@ dist/data/
   "kind": "open",
   "logo": "EA",
   "cost": "免费",
-  "metrics": { "wer": 4.12, "cer": 3.76, "rtf": 0.06, "latency_ms": 82 },
+  "metrics": { "wer": 4.12, "cer": 3.76 },
   "datasets": [
     {
       "name": "Example Dataset",
       "scenario": "中文 · 普通话",
       "size": "10h",
-      "metrics": { "wer": 4.12, "cer": 3.76 }
+      "metrics": { "cer": 3.76 }
     }
   ],
   "introduction": {
@@ -110,6 +110,38 @@ python3 models/Qwen3-ASR/asr_client.py \
 都会写入 checkpoint，进程中断后使用相同命令即可续跑；如需清空已有结果并重新推理，
 添加 `--overwrite`。安装了 Qwen3-ASR 的 vLLM 依赖后，也可将后端改为 `--backend vllm`。
 
+### SE 请求与结果保存
+
+`scripts/se_result_provider.py` 消费 `models/se_dataset_provider.py` 提供的语音增强样本，
+默认适配 `models.soundai.se_client`。SoundAI 客户端先提交 noisy 音频取得 `taskid`，
+再下载增强结果；enrol 音频不发送给当前接口，但其路径会和 noisy、enhanced 路径一起
+写入 JSON，供后续指标计算使用。
+
+以下命令处理测试集的耳机 Track：
+
+```bash
+python3 scripts/se_result_provider.py \
+  --dataset test/Track1_Headset \
+  --output-root /path/to/soundai/se-results
+```
+
+`--dataset` 可重复指定，可选值为：
+
+- `blind/Track1_Headset`
+- `blind/Track2_Speakerphone`
+- `test/Track1_Headset`
+- `test/Track2_Speakerphone`
+
+不传 `--dataset` 时依次处理全部四个分组。增强音频默认保存到
+`<输出目录>/enhanced/<blind|test>/<Track>/`，SoundAI 输出后缀默认为 `.mp3`；
+可分别通过 `--enhanced-root` 和 `--enhanced-suffix` 修改。JSON 结果保存到
+`<输出目录>/<blind|test>/<Track>.json`，包含 enrol、noisy、enhanced 路径、`task_id`、
+请求状态和 `latency_ms`。
+
+每处理完一条样本都会同步写入 `<Track>.checkpoint.jsonl`。中断后使用相同命令可续跑；
+已有成功记录且增强音频仍存在时会自动跳过，失败记录会重试。使用 `--limit 1` 可先执行
+单条冒烟测试，使用 `--overwrite` 可忽略已有 JSON 并重新处理。
+
 提交脚本使用项目内复制的 SpeechIO 中英文归一化与错误率脚本。英文评测需要先安装
 `scripts/speechio_metrics/requirements.txt` 中的依赖。`--output` 建议为新的模型 JSON；
 只在指标核对后替换榜单文件。
@@ -118,16 +150,20 @@ python3 models/Qwen3-ASR/asr_client.py \
 ```bash
 /home/chentingwei/miniforge3/envs/audio_env/bin/python scripts/submitted_result.py \
   --result-root /path/to/soundai/results \
-  --template dist/data/models/asr/test-speech.json \
+  --template dist/data/models/asr/template.json \
   --output /path/to/soundai-model.json
 ```
 
-CER 和 WER 分别采用字符、空格分词；先按每条参考文本拆分中英文，按 SpeechIO
-对应规则归一化及评测，再按总编辑数与总参考 token 数汇总。英文 WER 使用
-`error_rate_en` 的词汇规则，英文 CER 使用 `error_rate_zh` 的字符编辑距离实现。
-失败请求作为空转写计分。
-榜单延时是成功请求的平均值，RTF 是成功请求总耗时除以其音频总时长。
-中文 SpeechIO 官方指标为 CER；本项目同时提供基于空格分词的中文 WER。
+指标按数据集类型统一计算：中文数据集的全部样本使用 CER，英文数据集的全部样本使用
+WER；中英混合句也采用所属数据集的指标，不按句子内容拆分计算。数据集语言优先读取
+结果 JSON 或模板中的 `language`，否则读取模板 `scenario` 中的中文/英文标注。经 SpeechIO
+对应规则归一化及评测后，再按指标的总编辑数与总参考 token 数汇总。英文 WER 使用
+`error_rate_en` 的词汇规则，中文 CER 使用 `error_rate_zh` 的字符编辑距离实现。
+中英文归一化都会移除常见标点；英文单词内部的撇号会作为词形的一部分保留。失败请求
+作为空转写计分。评分成功后，脚本会原子更新 `--result-root` 下的各数据集识别 JSON，
+为每条 `results` 记录增加 `sentence_metric`，其中包含该句采用的 `cer`/`wer`、百分比、
+编辑错误数和参考 token 数；参考文本归一化后为空的记录不参与评分，对应数值为 `null`。
+提交结果只包含汇总 CER/WER，不写入原始请求中的 `latency_ms` 和 RTF。
 
 ```bash
 node scripts/build-data-index.cjs
