@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# `dist/` is this repository's GitHub Pages source and must be committed.
 downloads/
 eggs/
 .eggs/

@@ -1,0 +1,461 @@
+{
+  "task": "asr",
+  "name": "SoundAi",
+  "org": "声智科技",
+  "kind": "api",
+  "logo": "AS",
+  "logo_image": "assets/logos/soundai.ico",
+  "cost": "",
+  "metrics": {
+    "cer": 14.6196,
+    "wer": 10.8743
+  },
+  "datasets": [
+    {
+      "scenario": "中文 · 普通话朗读",
+      "size": "10.03h",
+      "name": "AISHELL1_TEST",
+      "metrics": {
+        "cer": 3.6403
+      }
+    },
+    {
+      "scenario": "中文 · 普通话朗读 · Android",
+      "size": "4.00h",
+      "name": "AISHELL2_ANDROID_TEST",
+      "metrics": {
+        "cer": 9.6614
+      }
+    },
+    {
+      "scenario": "中文 · 普通话朗读 · iOS",
+      "size": "4.00h",
+      "name": "AISHELL2_IOS_TEST",
+      "metrics": {
+        "cer": 3.0627
+      }
+    },
+    {
+      "scenario": "中文 · 普通话朗读 · 麦克风",
+      "size": "4.00h",
+      "name": "AISHELL2_MIC_TEST",
+      "metrics": {
+        "cer": 4.2966
+      }
+    },
+    {
+      "scenario": "中文 · 会议 · 远场 · Eval",
+      "size": "4.62h",
+      "name": "ALIMEETING_EVAL_FAR_FIELD",
+      "metrics": {
+        "cer": 23.6239
+      }
+    },
+    {
+      "scenario": "中文 · 会议 · 近场 · Eval",
+      "size": "4.64h",
+      "name": "ALIMEETING_EVAL_NEAR_FIELD",
+      "metrics": {
+        "cer": 6.742
+      }
+    },
+    {
+      "scenario": "中文 · 会议 · 远场 · Test",
+      "size": "11.80h",
+      "name": "ALIMEETING_TEST_FAR_FIELD",
+      "metrics": {
+        "cer": 25.2427
+      }
+    },
+    {
+      "scenario": "中文 · 会议 · 近场 · Test",
+      "size": "11.83h",
+      "name": "ALIMEETING_TEST_NEAR_FIELD",
+      "metrics": {
+        "cer": 8.3359
+      }
+    },
+    {
+      "scenario": "中文 · 福建重口音普通话 · 手机",
+      "size": "1.84h",
+      "name": "King-ASR-384-1",
+      "metrics": {
+        "cer": 11.6726
+      }
+    },
+    {
+      "scenario": "中文 · 天津重口音普通话 · 手机",
+      "size": "4.05h",
+      "name": "King-ASR-384-10",
+      "metrics": {
+        "cer": 7.6626
+      }
+    },
+    {
+      "scenario": "中文 · 安徽重口音普通话 · 手机",
+      "size": "5.54h",
+      "name": "King-ASR-384-11",
+      "metrics": {
+        "cer": 26.3617
+      }
+    },
+    {
+      "scenario": "中文 · 山东重口音普通话 · 手机",
+      "size": "3.18h",
+      "name": "King-ASR-384-12",
+      "metrics": {
+        "cer": 5.8476
+      }
+    },
+    {
+      "scenario": "中文 · 河南重口音普通话 · 手机",
+      "size": "3.10h",
+      "name": "King-ASR-384-13",
+      "metrics": {
+        "cer": 13.785
+      }
+    },
+    {
+      "scenario": "中文 · 湖北重口音普通话 · 手机",
+      "size": "3.53h",
+      "name": "King-ASR-384-17",
+      "metrics": {
+        "cer": 10.1565
+      }
+    },
+    {
+      "scenario": "中文 · 甘肃重口音普通话 · 手机",
+      "size": "6.60h",
+      "name": "King-ASR-384-18",
+      "metrics": {
+        "cer": 25.0054
+      }
+    },
+    {
+      "scenario": "中文 · 广东重口音普通话 · 手机",
+      "size": "2.15h",
+      "name": "King-ASR-384-2",
+      "metrics": {
+        "cer": 24.0302
+      }
+    },
+    {
+      "scenario": "中文 · 湖南重口音普通话 · 手机",
+      "size": "1.44h",
+      "name": "King-ASR-384-3",
+      "metrics": {
+        "cer": 28.7768
+      }
+    },
+    {
+      "scenario": "中文 · 江西重口音普通话 · 手机",
+      "size": "2.23h",
+      "name": "King-ASR-384-4",
+      "metrics": {
+        "cer": 41.8938
+      }
+    },
+    {
+      "scenario": "中文 · 吴重口音普通话 · 手机",
+      "size": "7.02h",
+      "name": "King-ASR-384-9",
+      "metrics": {
+        "cer": 53.8114
+      }
+    },
+    {
+      "scenario": "中文 · 四川重口音普通话 · 手机",
+      "size": "2.12h",
+      "name": "King-ASR-881",
+      "metrics": {
+        "cer": 20.2725
+      }
+    },
+    {
+      "scenario": "英文 · 有声书朗读 · Clean",
+      "size": "5.40h",
+      "name": "LIBRISPEECH_TEST_CLEAN",
+      "metrics": {
+        "wer": 7.8443
+      }
+    },
+    {
+      "scenario": "英文 · 有声书朗读 · Other",
+      "size": "5.34h",
+      "name": "LIBRISPEECH_TEST_OTHER",
+      "metrics": {
+        "wer": 11.0512
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00000",
+      "size": "1.60h",
+      "name": "SPEECHIO_ASR_ZH00000",
+      "metrics": {
+        "cer": 2.428
+      }
+    },
+    {
+      "scenario": "中文 · 新闻播报",
+      "size": "8.72h",
+      "name": "SPEECHIO_ASR_ZH00001",
+      "metrics": {
+        "cer": 1.2777
+      }
+    },
+    {
+      "scenario": "中文 · 电视访谈",
+      "size": "2.75h",
+      "name": "SPEECHIO_ASR_ZH00002",
+      "metrics": {
+        "cer": 7.4484
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00003",
+      "size": "2.39h",
+      "name": "SPEECHIO_ASR_ZH00003",
+      "metrics": {
+        "cer": 1.2451
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00004",
+      "size": "2.82h",
+      "name": "SPEECHIO_ASR_ZH00004",
+      "metrics": {
+        "cer": 1.4537
+      }
+    },
+    {
+      "scenario": "中文 · 在线教育",
+      "size": "4.38h",
+      "name": "SPEECHIO_ASR_ZH00005",
+      "metrics": {
+        "cer": 32.1037
+      }
+    },
+    {
+      "scenario": "中文 · 直播内容",
+      "size": "1.66h",
+      "name": "SPEECHIO_ASR_ZH00006",
+      "metrics": {
+        "cer": 13.33
+      }
+    },
+    {
+      "scenario": "中文 · 直播内容",
+      "size": "0.98h",
+      "name": "SPEECHIO_ASR_ZH00007",
+      "metrics": {
+        "cer": 14.8678
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00008",
+      "size": "1.28h",
+      "name": "SPEECHIO_ASR_ZH00008",
+      "metrics": {
+        "cer": 4.3933
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00009",
+      "size": "4.64h",
+      "name": "SPEECHIO_ASR_ZH00009",
+      "metrics": {
+        "cer": 3.5039
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00010",
+      "size": "4.21h",
+      "name": "SPEECHIO_ASR_ZH00010",
+      "metrics": {
+        "cer": 6.2498
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00011",
+      "size": "3.45h",
+      "name": "SPEECHIO_ASR_ZH00011",
+      "metrics": {
+        "cer": 6.6107
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00012",
+      "size": "3.39h",
+      "name": "SPEECHIO_ASR_ZH00012",
+      "metrics": {
+        "cer": 28.1602
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00013",
+      "size": "1.78h",
+      "name": "SPEECHIO_ASR_ZH00013",
+      "metrics": {
+        "cer": 16.7552
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00014",
+      "size": "1.01h",
+      "name": "SPEECHIO_ASR_ZH00014",
+      "metrics": {
+        "cer": 14.3888
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00015",
+      "size": "2.15h",
+      "name": "SPEECHIO_ASR_ZH00015",
+      "metrics": {
+        "cer": 12.5714
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00016",
+      "size": "1.01h",
+      "name": "SPEECHIO_ASR_ZH00016",
+      "metrics": {
+        "cer": 11.899
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00017",
+      "size": "1.80h",
+      "name": "SPEECHIO_ASR_ZH00017",
+      "metrics": {
+        "cer": 5.6979
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00018",
+      "size": "0.85h",
+      "name": "SPEECHIO_ASR_ZH00018",
+      "metrics": {
+        "cer": 4.1118
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00019",
+      "size": "0.70h",
+      "name": "SPEECHIO_ASR_ZH00019",
+      "metrics": {
+        "cer": 4.6023
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00020",
+      "size": "2.18h",
+      "name": "SPEECHIO_ASR_ZH00020",
+      "metrics": {
+        "cer": 1.8415
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00021",
+      "size": "1.74h",
+      "name": "SPEECHIO_ASR_ZH00021",
+      "metrics": {
+        "cer": 9.3184
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00022",
+      "size": "1.68h",
+      "name": "SPEECHIO_ASR_ZH00022",
+      "metrics": {
+        "cer": 13.4303
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00023",
+      "size": "2.11h",
+      "name": "SPEECHIO_ASR_ZH00023",
+      "metrics": {
+        "cer": 14.7566
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00024",
+      "size": "2.65h",
+      "name": "SPEECHIO_ASR_ZH00024",
+      "metrics": {
+        "cer": 4.625
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00025",
+      "size": "1.41h",
+      "name": "SPEECHIO_ASR_ZH00025",
+      "metrics": {
+        "cer": 5.0997
+      }
+    },
+    {
+      "scenario": "中文 · SpeechIO 真实场景 · ZH00026",
+      "size": "2.43h",
+      "name": "SPEECHIO_ASR_ZH00026",
+      "metrics": {
+        "cer": 4.5231
+      }
+    },
+    {
+      "scenario": "英文 · TED 演讲 · Dev",
+      "size": "1.60h",
+      "name": "TEDLIUM_RELEASE3_LEGACY_DEV",
+      "metrics": {
+        "wer": 17.5796
+      }
+    },
+    {
+      "scenario": "英文 · TED 演讲 · Test",
+      "size": "2.62h",
+      "name": "TEDLIUM_RELEASE3_LEGACY_TEST",
+      "metrics": {
+        "wer": 11.9917
+      }
+    },
+    {
+      "scenario": "中文 · 湖北重口音普通话",
+      "size": "1.66h",
+      "name": "hubei_zhongkouyin",
+      "metrics": {
+        "cer": 2.8508
+      }
+    },
+    {
+      "scenario": "中文 · 四川日常语句",
+      "size": "7.06h",
+      "name": "sichuan_daily_sentence",
+      "metrics": {
+        "cer": 32.4939
+      }
+    },
+    {
+      "scenario": "中文 · 武汉日常语句",
+      "size": "5.14h",
+      "name": "wuhan_daily_sentence",
+      "metrics": {
+        "cer": 20.1469
+      }
+    },
+    {
+      "scenario": "中文 · 郑州日常语句",
+      "size": "5.04h",
+      "name": "zhengzhou_daily_sentence",
+      "metrics": {
+        "cer": 24.4013
+      }
+    }
+  ],
+  "introduction": {
+    "summary": "",
+    "api": "https://openapi-gateway-azero.soundai.com//api/asr/recognize",
+    "model": "AzeroAsr-V1-Gasr",
+    "result_links": "https://drive.google.com/drive/folders/1uV3go7Jn5dZl2Wis9OGTNMMujqpINf7L?usp=sharing"
+  }
+}

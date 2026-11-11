@@ -19,7 +19,8 @@ function buildIndex() {
   for (const task of ['asr', 'tts']) {
     if (typeof config.rankingMetrics?.[task] !== 'string' || !config.rankingMetrics[task]) fail('config.json', `缺少 rankingMetrics.${task}`);
   }
-  const files = scan(path.join(dataDir, 'models'));
+  const files = scan(path.join(dataDir, 'models'))
+    .filter(file => path.basename(file) !== 'template.json');
   if (!files.length) fail('models', '至少需要一个模型 JSON');
   const names = new Set();
   for (const file of files) {

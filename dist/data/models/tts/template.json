@@ -1,0 +1,66 @@
+{
+  "task": "tts",
+  "name": "testTTS",
+  "org": "xxx",
+  "kind": "api",
+  "logo": "AZ",
+  "cost": "¥1.05",
+  "metrics": {
+    "mos": 4.19,
+    "sim": 0.879,
+    "wer": 2.82,
+    "rtf": 0.14,
+    "latency_ms": 173
+  },
+  "datasets": [
+    {
+      "name": "SeedTTS-Eval ZH",
+      "scenario": "中文 · 零样本",
+      "size": "2,000 条",
+      "metrics": {
+        "mos": 4.21,
+        "wer": 2.68,
+        "sim": 0.885,
+        "rtf": 0.13
+      }
+    },
+    {
+      "name": "SeedTTS-Eval EN",
+      "scenario": "英文 · 零样本",
+      "size": "2,000 条",
+      "metrics": {
+        "mos": 4.18,
+        "wer": 2.91,
+        "sim": 0.876,
+        "rtf": 0.14
+      }
+    },
+    {
+      "name": "AISHELL-3 Test",
+      "scenario": "中文 · 多说话人",
+      "size": "5.1h",
+      "metrics": {
+        "mos": 4.12,
+        "wer": 2.98,
+        "sim": 0.869,
+        "rtf": 0.15
+      }
+    }
+  ],
+  "introduction": {
+    "summary": "",
+    "specifications": {
+      "模型架构": "",
+      "参数量": "",
+      "模型文件大小": "",
+      "支持语言": "",
+      "许可证": ""
+    },
+    "architecture": {
+      "image": "",
+      "alt": "Azure Neural TTS 架构图",
+      "caption": ""
+    },
+    "links": []
+  }
+}
