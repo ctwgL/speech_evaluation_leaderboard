@@ -452,10 +452,21 @@
       }
     }
   ],
+
   "introduction": {
-    "summary": "",
-    "api": "https://openapi-gateway-azero.soundai.com//api/asr/recognize",
-    "model": "AzeroAsr-V1-Gasr",
-    "result_links": "https://drive.google.com/drive/folders/1uV3go7Jn5dZl2Wis9OGTNMMujqpINf7L?usp=sharing"
+    "summary": "接口地址：https://openapi-gateway-azero.soundai.com//api/asr/recognize",
+    "specifications": {
+      "模型架构": "AzeroAsr-V1-Gasr",
+      "参数量": "未知",
+      "模型文件大小": "未知",
+      "支持语言": "66种语言",
+      "许可证": "未知"
+    },
+    "architecture": {
+      "image": "",
+      "alt": "",
+      "caption": ""
+    },
+    "links": ["https://drive.google.com/drive/folders/1uV3go7Jn5dZl2Wis9OGTNMMujqpINf7L?usp=sharing"]
   }
 }
