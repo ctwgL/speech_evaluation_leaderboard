@@ -454,7 +454,7 @@
   ],
 
   "introduction": {
-    "summary": "接口地址：https://openapi-gateway-azero.soundai.com//api/asr/recognize",
+    "summary": "接口地址：https://openapi-gateway-azero.soundai.com/api/asr/recognize",
     "specifications": {
       "模型架构": "AzeroAsr-V1-Gasr",
       "参数量": "未知",

@@ -28,6 +28,9 @@ assert.match(elements.get('#modelIntroduction').innerHTML, /模型文件大小/)
 assert.match(elements.get('#modelIntroduction').innerHTML, /待补充/);
 assert.match(elements.get('#detailHead').innerHTML, /CER/);
 assert.match(elements.get('#detailHead').innerHTML, /WER/);
+vm.runInContext('renderModelDetails(DATA.asr.find(model => model.name === "ali_qwen3_asr_1.7b"),"asr")', context);
+assert.match(elements.get('#modelIntroduction').innerHTML, /<img src="https:\/\/qianwen-res\.oss-cn-beijing\.aliyuncs\.com\/Qwen3-ASR-Repo\/overview\.jpg"/);
+assert.match(elements.get('#modelIntroduction').innerHTML, /alt="Qwen3-Asr架构图"/);
 context.custom = { task: 'tts', name: 'New model', metrics: { mos: 4, pesq: 3 }, datasets: [{name:'New dataset',metrics:{pesq:3}}], introduction: { summary: '<script>bad</script>', specifications: {'自定义规格':'42M'}, architecture: {image:'javascript:alert(1)'}, links:[{label:'bad',url:'javascript:alert(1)'}] } };
 vm.runInContext('renderModelDetails(normalizeModel(custom,"tts"),"tts")', context);
 assert.match(elements.get('#detailHead').innerHTML, /PESQ/);
