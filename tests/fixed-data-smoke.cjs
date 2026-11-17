@@ -45,6 +45,8 @@ if (!app.includes("'立即对比 →'") || !app.includes('rankMotion')) throw ne
 if (!app.includes("openSearch('datasets')") || !app.includes("showDatasetRanking(button.dataset.group")) throw new Error('Dataset explorer interactions missing');
 if (!styles.includes('--open-color:') || !styles.includes('--api-color:') || !styles.includes('.type-dot.api')) throw new Error('Distinct model type colors missing');
 if (!app.includes('magnitudePercent(metricValue(m,metric),values)')) throw new Error('Top 10 bars must reflect raw metric magnitude');
+if (!app.includes('const level=magnitudePercent(value,scoreValues)')) throw new Error('Leaderboard bars must reflect raw metric magnitude');
+if (!app.includes('function comparisonWidth(value,values){return magnitudePercent(value,values)}')) throw new Error('Comparison bars must reflect raw metric magnitude');
 if (html.includes('固定数据源') || html.includes('<th>趋势</th>')) throw new Error('Removed source/trend copy reappeared');
 
 console.log(`fixed data smoke test: ok (${asr.length} ASR, ${tts.length} TTS)`);

@@ -1,4 +1,9 @@
-"""Consume vendor ASR clients and persist results by dataset name."""
+"""Consume ASR clients and persist results by dataset name.
+
+The built-in ``fireredasr`` client resolves to
+``models.Firered.asr_client:recognize``.  Explicit ``module:function`` specs
+remain supported for hosted/vendor recognizers.
+"""
 from __future__ import annotations
 
 import argparse
@@ -23,6 +28,12 @@ from models.asr_dataset_provider import (  # noqa: E402
 )
 
 Recognizer = Callable[[ASRSample], Any]
+
+CLIENT_ALIASES = {
+    "fireredasr": "models.Firered.asr_client:recognize",
+    "fireredasr-llm": "models.Firered.asr_client:recognize",
+    "fireredasr-aed": "models.Firered.asr_client:recognize_aed",
+}
 
 
 class ASRResultConsumer:
@@ -193,26 +204,45 @@ class ASRResultConsumer:
 
 
 def load_recognizer(spec: str, *, language: str = "auto") -> Recognizer:
-    """Load ``module:function``; pass language when the client accepts it."""
+    """Load a built-in alias or ``module:function`` recognizer.
+
+    The model client is imported once and the returned closure keeps calling
+    the same function.  FireRedASR's client caches its loaded model, avoiding
+    a 7B checkpoint reload for every sample.
+    """
+    requested_spec = spec
+    normalized_spec = spec.strip()
+    spec = CLIENT_ALIASES.get(normalized_spec.lower(), normalized_spec)
     try:
         module_name, function_name = spec.split(":", 1)
         function = getattr(importlib.import_module(module_name), function_name)
     except (ValueError, ImportError, AttributeError) as exc:
-        raise ValueError(f"无效请求接口: {spec}，格式应为 module:function") from exc
+        aliases = ", ".join(sorted(CLIENT_ALIASES))
+        raise ValueError(
+            f"无效请求接口: {requested_spec}，应为内置客户端 ({aliases}) "
+            "或 module:function"
+        ) from exc
     if not callable(function):
-        raise ValueError(f"请求接口不可调用: {spec}")
+        raise ValueError(f"请求接口不可调用: {requested_spec}")
     signature = inspect.signature(function)
     accepts_language = "language" in signature.parameters
     try:
         signature.bind(Path("sample.wav"), **({"language": language} if accepts_language else {}))
     except TypeError as exc:
-        raise ValueError(f"请求接口参数不兼容: {spec}: {exc}") from exc
+        raise ValueError(f"请求接口参数不兼容: {requested_spec}: {exc}") from exc
     return lambda sample: function(sample.audio_path, **({"language": language} if accepts_language else {}))
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="使用公司 ASR 接口批量生成识别结果")
-    parser.add_argument("--client", required=True, help="请求函数，格式：module:function")
+    parser = argparse.ArgumentParser(description="批量调用 ASR 客户端生成识别结果")
+    parser.add_argument(
+        "--client",
+        required=True,
+        help=(
+            "内置客户端名称或 module:function；FireRedASR 可使用 "
+            "fireredasr-llm/fireredasr-aed（fireredasr 等同 LLM）"
+        ),
+    )
     parser.add_argument("--dataset", action="append", help="数据集名称，可重复；默认全部")
     parser.add_argument("--language", default="auto", help="传给支持 language 参数的接口，默认 auto")
     parser.add_argument("--dataset-root", default=str(DEFAULT_DATASET_ROOT))
@@ -231,4 +261,11 @@ def main() -> int:
 if __name__ == "__main__":
     raise SystemExit(main())
 
-__all__ = ["ASRResultConsumer", "load_recognizer", "ASRSample", "ASRDatasetProvider", "get_default_provider"]
+__all__ = [
+    "ASRResultConsumer",
+    "CLIENT_ALIASES",
+    "load_recognizer",
+    "ASRSample",
+    "ASRDatasetProvider",
+    "get_default_provider",
+]
