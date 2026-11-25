@@ -4,6 +4,7 @@
   "org": "小红书",
   "kind": "open",
   "logo": "AS",
+  "logo_image": "assets/logos/firered-logo.png",
   "cost": "null",
   "metrics": {
     "cer": 6.9231,
