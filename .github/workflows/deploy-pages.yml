@@ -15,10 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,6 +30,8 @@ jobs:
           node tests/fixed-data-smoke.cjs
           node tests/model-profile.cjs
           node tests/data-loader.cjs
+      - name: Verify site output
+        run: test -s dist/index.html && test -s dist/data/index.json
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
@@ -41,6 +40,14 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
