@@ -5,6 +5,11 @@
     "tts": "mos"
   },
   "modelFiles": [
-    "./models/asr/soundai.json"
+    "./models/asr/soundai.json",
+    "./models/asr/firered_asr_v2_aed.json",
+    "./models/asr/firered_asr_v1_aed.json",
+    "./models/asr/ali_qwen3_asr_1.7.json",
+    "./models/asr/ali_qwen3_asr_0.6.json",
+    "./models/asr/ali_qwen_audio3_asr.json"
   ]
 }

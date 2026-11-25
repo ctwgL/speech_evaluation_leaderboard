@@ -23,7 +23,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from models.tts_dataset_provider import (  # noqa: E402
     DATASETS,
-    DEFAULT_CV3_EVAL_ROOT,
     DEFAULT_SEED_TTS_ROOT,
     TTSDatasetProvider,
     TTSSample,
@@ -436,7 +435,6 @@ def main() -> int:
         help="数据集名称，可重复；默认处理全部数据集",
     )
     parser.add_argument("--seed-tts-root", default=str(DEFAULT_SEED_TTS_ROOT))
-    parser.add_argument("--cv3-eval-root", default=str(DEFAULT_CV3_EVAL_ROOT))
     parser.add_argument("--output-root", required=True, help="JSON 结果输出根目录")
     parser.add_argument(
         "--generated-root",
@@ -479,7 +477,6 @@ def main() -> int:
     provider = TTSDatasetProvider(
         generated_root,
         seed_tts_root=args.seed_tts_root,
-        cv3_eval_root=args.cv3_eval_root,
         generated_suffix=".wav",
     )
     synthesizer = load_synthesizer(
